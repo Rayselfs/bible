@@ -223,7 +223,6 @@
                         v-for="item in countChapter()"
                         :key="item"
                         type="info"
-                        :disabled="chapterModel === item"
                         @click="setChapter(item)"
                         >第 {{ item }} {{ chapterUnit }}</el-button
                     >
