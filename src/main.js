@@ -21,7 +21,20 @@ import 'vue2-animate/dist/vue2-animate.min.css';
  * element-ui
  */
 import 'element-ui/lib/theme-chalk/index.css';
-import { Select, Option, Button, Container, Header, Aside, Main, Footer, Tabs, TabPane, Slider } from 'element-ui';
+import {
+    Select,
+    Option,
+    Button,
+    Container,
+    Header,
+    Aside,
+    Main,
+    Footer,
+    Tabs,
+    TabPane,
+    Slider,
+    Input
+} from 'element-ui';
 Vue.use(Select);
 Vue.use(Option);
 Vue.use(Button);
@@ -33,6 +46,7 @@ Vue.use(Footer);
 Vue.use(Tabs);
 Vue.use(TabPane);
 Vue.use(Slider);
+Vue.use(Input);
 
 Vue.config.productionTip = false;
 

@@ -1,15 +1,10 @@
 <template>
     <el-container class="bible">
         <el-header>
-            <div class="navbar d-flex justify-content-around">
-                <div></div>
-                <div class="d-flex">
-                    <el-select
-                        v-model="bookFilterSelectorModel"
-                        placeholder="請選擇"
-                        class="w-100 mr-3"
-                        @change="filterBook"
-                    >
+            <b-row class="navbar" align-h="between">
+                <b-col cols="4"></b-col>
+                <b-col cols="4" class="d-flex justify-content-center">
+                    <el-select v-model="bookFilterSelectorModel" placeholder="請選擇" class="mr-3" @change="filterBook">
                         <el-option
                             v-for="item in bookFilterSelector"
                             :key="item.value"
@@ -18,9 +13,19 @@
                         ></el-option>
                     </el-select>
                     <el-button type="info" @click="openBibleSelector()">選擇經文章節</el-button>
-                </div>
-                <div></div>
-            </div>
+                </b-col>
+                <b-col cols="4" class="d-flex justify-content-end">
+                    <el-input
+                        style="width: 250px"
+                        placeholder="請搜尋經文"
+                        suffix-icon="el-icon-search"
+                        v-model="searchKey"
+                        @change="search"
+                        @blur="clearSearchKey"
+                    >
+                    </el-input>
+                </b-col>
+            </b-row>
         </el-header>
         <el-container class="pl-3 pr-3 position-relative">
             <!-- 預覽區 -->
@@ -29,20 +34,18 @@
                     預覽 (
                     <span class="mr-2">{{ bookName }}</span>
                     <span class="mr-2" v-show="chapterModel">第{{ chapterModel }}{{ chapterUnit }}</span>
-                    <span v-show="sectionModel">第{{ sectionModel }}節</span>
-                    )
+                    <span v-show="sectionModel">第{{ sectionModel }}節</span>)
                 </h4>
-                <div class="preview-wrapper box-bk">
-                    <div class="p-3">
+                <div ref="preview" class="preview-wrapper box-bk">
+                    <div class="preview-content p-3">
                         <div
                             v-for="(item, index) in previewList"
                             :key="index"
                             :id="'section_' + item.section"
                             class="mb-3 w-100 d-flex preview-item"
                             :class="{ 'preview-selected': item.section === sectionModel }"
-                            @click="playSlide(item.book, item.chapter, item.section, index)"
+                            @click="playSlide(item, index)"
                         >
-                            <div>{{ item.section }}.</div>
                             <div>{{ item.content }}</div>
                         </div>
                     </div>
@@ -248,6 +251,7 @@
 import { book, chapter, section } from '@/assets/js/function';
 import { bible } from '@/assets/js/bible';
 import collect from 'collect.js';
+import Fuse from 'fuse.js';
 
 let slide;
 
@@ -271,8 +275,8 @@ export default {
         BookOpacity: 1,
         switchPage: 'book',
         chapterUnit: '章',
-        leftSection: null,
-        rightSection: null,
+        omegaSection: null,
+        alphaSection: null,
         previewList: [],
         tabName: 'history',
         historyList: [],
@@ -282,7 +286,8 @@ export default {
         totalSection: null,
         nowChapter: null,
         nowSection: null,
-        slideFontSize: 50
+        slideFontSize: 50,
+        searchKey: ''
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -407,14 +412,20 @@ export default {
          * 設置預覽
          */
         setPreview() {
+            let content;
             this.previewList = [];
             let i = 1;
-            for (let index = this.rightSection; index < this.leftSection; index++) {
+
+            for (let index = this.alphaSection; index < this.omegaSection; index++) {
+                content = bible[index].split(' ');
                 this.previewList.push({
                     book: this.bookModel,
                     chapter: this.chapterModel,
                     section: i,
-                    content: bible[index].split(' ')[1]
+                    content: `${content[0]} - ${content[1]}`,
+                    alphaSection: this.alphaSection,
+                    omegaSection: this.omegaSection,
+                    mode: 'choose'
                 });
                 i++;
             }
@@ -427,45 +438,48 @@ export default {
          */
         jumpToSection() {
             setTimeout(() => {
-                const index = this.sectionModel <= 2 ? this.sectionModel : this.sectionModel - 2;
+                const index = this.sectionModel <= 1 ? this.sectionModel : this.sectionModel - 1;
                 window.location.hash = '#section_' + index;
-            }, 10);
+            }, 100);
         },
         /**
          * 開始投放
          */
-        playSlide(book, chapter, section, index) {
-            this.countSectionIndex();
-            this.sectionModel = section;
-
-            const info = {
-                book: book,
-                chapter: chapter,
-                section: section,
-                rightSection: this.rightSection,
-                leftSection: this.leftSection
-            };
+        playSlide(info, index) {
+            this.sectionModel = info.section;
 
             this.setBaseInfo(info);
             this.setPlayStatus();
 
             this.openSlide();
-            this.saveToHistory(book, chapter, section, index, info);
+
+            if (info.mode !== 'control') {
+                this.saveToHistory(info, index);
+            }
+
+            if (info.mode === 'search') {
+                this.bookName = this.getBookName(info.book);
+                this.setPreview();
+            }
         },
         /**
          * 設置投放基本訊息
          */
         setBaseInfo(info) {
+            this.bookModel = info.book;
+            this.chapterModel = info.chapter;
+            this.sectionModel = info.section;
+            this.alphaSection = info.alphaSection;
+            this.omegaSection = info.omegaSection;
+
             localStorage.setItem('bibleSlideInfo', JSON.stringify(info));
             localStorage.setItem('bibleNowSection', info.section);
 
             this.totalChapter = this.countChapter();
-            this.totalSection = info.leftSection - info.rightSection;
+            this.totalSection = info.omegaSection - info.alphaSection;
 
             this.nowChapter = info.chapter;
             this.nowSection = info.section;
-
-            console.log(this.totalChapter);
         },
         /**
          * 設置投放狀態
@@ -483,17 +497,17 @@ export default {
         /**
          * 儲存至歷史
          */
-        saveToHistory(book, chapter, section, index) {
+        saveToHistory(info, index) {
             const date = new Date();
             this.historyList.unshift({
                 content: this.previewList[index].content,
-                info: `${this.allBook.first((item) => item.value === book).label},
-                        ${chapter}章, ${section}節`,
+                info: `${this.getBookName(info.book)},
+                        ${info.chapter}章, ${info.section}節`,
                 time: this.getTS(date),
                 timestamp: this.getTimestamp(date),
-                book: book,
-                chapter: chapter,
-                section: section
+                book: info.book,
+                chapter: info.chapter,
+                section: info.section
             });
 
             if (this.historyList.length > 20) {
@@ -509,7 +523,7 @@ export default {
             }
 
             this.countSectionIndex();
-            return this.leftSection - this.rightSection;
+            return this.omegaSection - this.alphaSection;
         },
         /**
          * 計算Section陣列index位置
@@ -517,11 +531,14 @@ export default {
          * @param {int} chapterModel
          */
         countSectionIndex(bookModel = this.bookModel, chapterModel = this.chapterModel) {
-            this.leftSection = section[chapter[bookModel] + chapterModel];
-            this.rightSection = section[chapter[bookModel] + chapterModel - 1];
+            this.omegaSection = section[chapter[bookModel] + chapterModel];
+            this.alphaSection = section[chapter[bookModel] + chapterModel - 1];
         },
-        chapterSectionScrollTop() {
-            this.$refs.chapterSection.scrollTop = 0;
+        /**
+         * 將preview設置頂部
+         */
+        previewScrollToTop() {
+            this.$refs.preview.scrollTop = 0;
         },
         getTimestamp(date) {
             return date.getTime();
@@ -558,7 +575,18 @@ export default {
 
             this.countSectionIndex();
             this.setPreview();
-            this.playSlide(this.bookModel, this.nowChapter, 1, 0);
+
+            this.playSlide(
+                {
+                    book: this.bookModel,
+                    chapter: this.nowChapter,
+                    section: 1,
+                    alphaSection: this.alphaSection,
+                    omegaSection: this.omegaSection,
+                    mode: 'control'
+                },
+                0
+            );
         },
         /**
          * 控制上下節
@@ -568,6 +596,89 @@ export default {
             if (!status && this.nowSection > 1) this.nowSection--;
 
             localStorage.setItem('bibleNowSection', this.nowSection);
+        },
+        search(keyword) {
+            if (keyword === '') return;
+
+            const options = { includeScore: true, threshold: 0.5 };
+            const fuse = new Fuse(bible, options);
+
+            const searchResult = fuse.search(keyword);
+
+            this.reset();
+
+            if (searchResult.length === 0) {
+                this.bookName = '沒有結果，請重新設定條件';
+                return;
+            }
+
+            let chapterIndex;
+            let bookModel;
+            let chapterModel;
+            let sectionModel;
+            let content;
+            let omegaSection;
+            let alphaSection;
+
+            searchResult.forEach((element) => {
+                chapterIndex = 0;
+
+                bookModel = null;
+                chapterModel = null;
+                sectionModel = null;
+                omegaSection = null;
+                alphaSection = null;
+
+                section.every(function(item, index) {
+                    chapterIndex = index - 1;
+                    sectionModel = element.refIndex - section[index - 1] + 1;
+                    alphaSection = section[index - 1];
+                    omegaSection = item;
+
+                    if (item <= element.refIndex) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+
+                chapter.every(function(item, index) {
+                    bookModel = index - 1;
+                    chapterModel = chapterIndex - chapter[index - 1] + 1;
+
+                    if (item <= chapterIndex) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+
+                content = element.item.split(' ');
+                this.previewList.push({
+                    book: bookModel,
+                    chapter: chapterModel,
+                    section: sectionModel,
+                    content: `${content[0]} - ${content[1]}`,
+                    alphaSection: alphaSection,
+                    omegaSection: omegaSection,
+                    mode: 'search'
+                });
+            });
+
+            this.bookName = '搜尋結果';
+            this.previewScrollToTop();
+        },
+        clearSearchKey() {
+            this.searchKey = '';
+        },
+        getBookName(bookIndex) {
+            return this.allBook.first((item) => item.value === bookIndex).label;
+        },
+        reset() {
+            this.previewList = [];
+            this.bookModel = null;
+            this.chapterModel = null;
+            this.sectionModel = null;
         }
     }
 };
@@ -636,6 +747,10 @@ export default {
     height: calc(100% - 3rem);
     font-size: 18px;
     overflow: scroll;
+}
+
+.preview-content {
+    padding-bottom: 90vh !important;
 }
 
 .box-bk {
