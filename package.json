@@ -13,6 +13,7 @@
     "collect.js": "^4.28.2",
     "core-js": "^3.6.5",
     "element-ui": "^2.13.2",
+    "fuse.js": "^6.4.1",
     "vue": "^2.6.12",
     "vue-router": "^3.2.0",
     "vue2-animate": "^2.1.4"

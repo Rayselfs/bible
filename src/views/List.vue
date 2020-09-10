@@ -86,14 +86,14 @@ export default {
         },
         play() {
             this.list = [];
-            for (let index = this.info.rightSection; index < this.info.leftSection; index++) {
+            for (let index = this.info.alphaSection; index < this.info.omegaSection; index++) {
                 this.list.push(bible[index].split(' ')[1]);
             }
         },
         jumpToSection() {
             setTimeout(() => {
                 this.controlSection(this.info.section);
-            }, 300);
+            }, 2000);
         },
         controlSection(section) {
             window.location.hash = '#section_' + section;
