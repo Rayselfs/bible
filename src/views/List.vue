@@ -25,9 +25,9 @@ export default {
         // 監聽storage
         window.addEventListener('storage', this.localStorageChange);
 
-        // window.addEventListener('beforeunload', function() {
-        //     localStorage.setItem('biblePlayStatus', 0);
-        // });
+        window.addEventListener('beforeunload', function() {
+            localStorage.setItem('biblePlayStatus', 0);
+        });
 
         this.setFontSize();
         this.setInfo();
