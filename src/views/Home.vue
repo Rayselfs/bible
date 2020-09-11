@@ -62,6 +62,7 @@
                                         v-for="item in historyList"
                                         :key="`${item.book}_${item.timestamp}`"
                                         class="d-flex mb-3 preview-item"
+                                        @click="playSlide(item, item.index)"
                                     >
                                         <div>
                                             <i class="el-icon-caret-right"></i>
@@ -291,6 +292,11 @@ export default {
     created() {
         window.addEventListener('storage', this.localStorageChange);
 
+        // 監聽視窗關閉
+        window.addEventListener('beforeunload', function() {
+            if (slide && !slide.closed) slide.close();
+        });
+
         this.allBook = collect(book);
         this.bookSelector = this.allBook.all();
 
@@ -304,7 +310,6 @@ export default {
         },
         localStorageChange(e) {
             const key = e.key;
-            // const value = JSON.parse(e.newValue);
 
             switch (key) {
                 case 'biblePlayStatus':
@@ -452,13 +457,13 @@ export default {
 
             this.openSlide();
 
-            if (info.mode !== 'control') {
-                this.saveToHistory(info, index);
-            }
-
-            if (info.mode === 'search') {
+            if (info.mode === 'search' || info.mode === 'history') {
                 this.bookName = this.getBookName(info.book);
                 this.setPreview();
+            }
+
+            if (info.mode !== 'control' && info.mode !== 'history') {
+                this.saveToHistory(info, index);
             }
         },
         /**
@@ -506,7 +511,11 @@ export default {
                 timestamp: this.getTimestamp(date),
                 book: info.book,
                 chapter: info.chapter,
-                section: info.section
+                section: info.section,
+                alphaSection: info.alphaSection,
+                omegaSection: info.omegaSection,
+                index: index,
+                mode: 'history'
             });
 
             if (this.historyList.length > 20) {
@@ -673,11 +682,17 @@ export default {
         getBookName(bookIndex) {
             return this.allBook.first((item) => item.value === bookIndex).label;
         },
+        /**
+         * 重置
+         */
         reset() {
             this.previewList = [];
             this.bookModel = null;
             this.chapterModel = null;
             this.sectionModel = null;
+        },
+        setHistory(info) {
+            console.log(info);
         }
     }
 };
