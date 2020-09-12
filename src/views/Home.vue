@@ -16,6 +16,7 @@
                 </b-col>
                 <b-col cols="4" class="d-flex justify-content-end">
                     <el-input
+                        class="mr-2"
                         style="width: 250px"
                         placeholder="請搜尋經文"
                         suffix-icon="el-icon-search"
@@ -24,18 +25,43 @@
                         @blur="clearSearchKey"
                     >
                     </el-input>
+                    <el-dropdown>
+                        <div class="setting-icon"><i class="el-icon-s-tools"></i></div>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item
+                                ><div class="block">
+                                    <span>字型大小</span>
+                                    <el-slider
+                                        v-model="slideFontSize"
+                                        :min="70"
+                                        :max="140"
+                                        @change="changeSlideFontSize"
+                                    ></el-slider></div
+                            ></el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
                 </b-col>
             </b-row>
         </el-header>
         <el-container class="pl-3 pr-3 position-relative">
             <!-- 預覽區 -->
             <el-aside width="50%" class="pt-3 pb-3">
-                <h4 class="mb-3 ml-3">
-                    預覽 (
-                    <span class="mr-2">{{ bookName }}</span>
-                    <span class="mr-2" v-show="chapterModel">第{{ chapterModel }}{{ chapterUnit }}</span>
-                    <span v-show="sectionModel">第{{ sectionModel }}節</span>)
-                </h4>
+                <div class="d-flex justify-content-between">
+                    <h4 class="mb-3 ml-3">
+                        預覽 (
+                        <span class="mr-2">{{ bookName }}</span>
+                        <span class="mr-2" v-show="chapterModel">第{{ chapterModel }}{{ chapterUnit }}</span>
+                        <span v-show="sectionModel">第{{ sectionModel }}節</span>)
+                    </h4>
+                    <el-tooltip class="question-tooltip" effect="light" placement="bottom-end">
+                        <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
+                            <li class="mb-2">此區為預覽區域</li>
+                            <li class="mb-2">播放視窗還未開啟時，點選章節會自動開啟</li>
+                            <li class="mb-2">點選搜尋結果會跳轉到該章節</li>
+                        </ol>
+                        <i class="el-icon-question"></i>
+                    </el-tooltip>
+                </div>
                 <div ref="preview" class="preview-wrapper box-bk">
                     <div class="preview-content p-3">
                         <div
@@ -44,17 +70,27 @@
                             :id="'section_' + item.section"
                             class="mb-3 w-100 d-flex preview-item"
                             :class="{ 'preview-selected': item.section === sectionModel }"
-                            @click="playSlide(item, index)"
-                        >
-                            <div>{{ item.content }}</div>
-                        </div>
+                            @click="playSlide(item)"
+                            v-html="item.content"
+                        ></div>
                     </div>
                 </div>
             </el-aside>
             <el-container>
                 <el-main>
                     <!-- 歷史紀錄與自訂 -->
-                    <div class="history">
+                    <div class="history position-relative">
+                        <el-tooltip
+                            class="question-tooltip position-absolute"
+                            effect="light"
+                            placement="bottom-end"
+                            style="right: 0; top: 0; z-index: 2"
+                        >
+                            <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
+                                <li class="mb-2">最上面為最新查詢項目</li>
+                            </ol>
+                            <i class="el-icon-question"></i>
+                        </el-tooltip>
                         <el-tabs v-model="tabName" type="card">
                             <el-tab-pane label="歷史紀錄" name="history">
                                 <transition-group name="fadeLeft" tag="div" class="p-3">
@@ -62,15 +98,12 @@
                                         v-for="item in historyList"
                                         :key="`${item.book}_${item.timestamp}`"
                                         class="d-flex mb-3 preview-item"
-                                        @click="playSlide(item, item.index)"
+                                        @click="playSlide(item)"
                                     >
                                         <div>
                                             <i class="el-icon-caret-right"></i>
                                         </div>
-                                        <div>
-                                            <p class="mb-2">{{ item.content }}</p>
-                                            <p class="mb-0">( {{ item.info }}, {{ item.time }} )</p>
-                                        </div>
+                                        <div v-html="item.content" class="d-flex"></div>
                                     </div>
                                 </transition-group>
                             </el-tab-pane>
@@ -164,27 +197,12 @@
                             </b-row>
                         </div>
                     </div>
-                    <div class="setting">
-                        <h4 class="mb-3 ml-3">設定</h4>
-                        <div class="box-bk p-3">
-                            <div class="block">
-                                <span>字型大小</span>
-                                <el-slider
-                                    v-model="slideFontSize"
-                                    :min="50"
-                                    :max="120"
-                                    :marks="{ 50: '50', 120: '120' }"
-                                    @change="changeSlideFontSize"
-                                ></el-slider>
-                            </div>
-                        </div>
-                    </div>
                 </el-main>
             </el-container>
         </el-container>
 
         <!-- 聖經 dropdown modal -->
-        <b-modal id="modal-bible" size="lg">
+        <b-modal id="modal-bible" size="xl">
             <template v-slot:modal-header>
                 <div class="w-100 d-flex justify-content-between">
                     <div>
@@ -214,16 +232,18 @@
                         :key="index"
                         type="info"
                         :class="{ 'button-select': bookModel === item.value }"
+                        style="width: 160px;"
                         @click="setBook(item.value, item.label)"
                         >{{ item.label }}</el-button
                     >
                 </div>
                 <div v-else-if="switchPage === 'chapter'" key="chapter">
                     <el-button
-                        class="mb-3 ml-3"
+                        class="mb-3 ml-2"
                         v-for="item in countChapter()"
                         :key="item"
                         type="info"
+                        style="width: 100px;"
                         @click="setChapter(item)"
                         >第 {{ item }} {{ chapterUnit }}</el-button
                     >
@@ -232,9 +252,10 @@
                     <el-button
                         v-for="item in countSectionAmount()"
                         :key="item"
-                        class="mb-3 ml-3"
+                        class="mb-3 ml-2"
                         type="info"
                         :disabled="sectionModel === item"
+                        style="width: 100px;"
                         @click="setSection(item)"
                         >第 {{ item }} 節</el-button
                     >
@@ -286,7 +307,7 @@ export default {
         totalSection: null,
         nowChapter: null,
         nowSection: null,
-        slideFontSize: 50,
+        slideFontSize: 100,
         searchKey: ''
     }),
     created() {
@@ -300,8 +321,11 @@ export default {
         this.allBook = collect(book);
         this.bookSelector = this.allBook.all();
 
+        // 預設定字型大小
         if (localStorage.getItem('slideFontSize')) {
             this.slideFontSize = parseInt(localStorage.getItem('slideFontSize'));
+        } else {
+            localStorage.setItem('slideFontSize', this.slideFontSize);
         }
     },
     methods: {
@@ -360,7 +384,6 @@ export default {
 
             this.previewList = [];
             this.nowChapter = null;
-            this.controlPlay(false);
 
             this.switchToChapter();
         },
@@ -426,7 +449,7 @@ export default {
                     book: this.bookModel,
                     chapter: this.chapterModel,
                     section: i,
-                    content: `${content[0]} - ${content[1]}`,
+                    content: `<div class="mr-1 text-nowrap">${content[0]} - </div><div>${content[1]}</div>`,
                     alphaSection: this.alphaSection,
                     omegaSection: this.omegaSection,
                     mode: 'choose'
@@ -449,7 +472,7 @@ export default {
         /**
          * 開始投放
          */
-        playSlide(info, index) {
+        playSlide(info) {
             this.sectionModel = info.section;
 
             this.setBaseInfo(info);
@@ -463,7 +486,7 @@ export default {
             }
 
             if (info.mode !== 'control' && info.mode !== 'history') {
-                this.saveToHistory(info, index);
+                this.saveToHistory(info);
             }
         },
         /**
@@ -501,20 +524,18 @@ export default {
         /**
          * 儲存至歷史
          */
-        saveToHistory(info, index) {
+        saveToHistory(info) {
             const date = new Date();
             this.historyList.unshift({
-                content: this.previewList[index].content,
+                content: this.previewList[info.section - 1].content,
                 info: `${this.getBookName(info.book)},
                         ${info.chapter}章, ${info.section}節`,
-                time: this.getTS(date),
                 timestamp: this.getTimestamp(date),
                 book: info.book,
                 chapter: info.chapter,
                 section: info.section,
                 alphaSection: info.alphaSection,
                 omegaSection: info.omegaSection,
-                index: index,
                 mode: 'history'
             });
 
@@ -552,8 +573,7 @@ export default {
             return date.getTime();
         },
         getTS(date) {
-            return `${date.getFullYear()}-${date.getMonth() +
-                1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+            return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         },
         /**
          * 控制投放與否
@@ -584,17 +604,14 @@ export default {
             this.countSectionIndex();
             this.setPreview();
 
-            this.playSlide(
-                {
-                    book: this.bookModel,
-                    chapter: this.nowChapter,
-                    section: 1,
-                    alphaSection: this.alphaSection,
-                    omegaSection: this.omegaSection,
-                    mode: 'control'
-                },
-                0
-            );
+            this.playSlide({
+                book: this.bookModel,
+                chapter: this.nowChapter,
+                section: 1,
+                alphaSection: this.alphaSection,
+                omegaSection: this.omegaSection,
+                mode: 'control'
+            });
         },
         /**
          * 控制上下節
@@ -662,11 +679,18 @@ export default {
                 });
 
                 content = element.item.split(' ');
+
+                const substringIndex = content[1].indexOf(keyword);
+                if (substringIndex !== -1) {
+                    const contentArray = content[1].split(keyword);
+                    content[1] = `${contentArray[0]}<span style="color: red;">${keyword}</span>${contentArray[1]}`;
+                }
+
                 this.previewList.push({
                     book: bookModel,
                     chapter: chapterModel,
                     section: sectionModel,
-                    content: `${content[0]} - ${content[1]}`,
+                    content: `<div class="mr-1 text-nowrap">${content[0]} - </div><div>${content[1]}</div>`,
                     alphaSection: alphaSection,
                     omegaSection: omegaSection,
                     mode: 'search'
@@ -690,9 +714,6 @@ export default {
             this.bookModel = null;
             this.chapterModel = null;
             this.sectionModel = null;
-        },
-        setHistory(info) {
-            console.log(info);
         }
     }
 };
@@ -759,8 +780,8 @@ export default {
 
 .preview-wrapper {
     height: calc(100% - 3rem);
-    font-size: 18px;
-    overflow: scroll;
+    overflow-y: scroll;
+    font-size: 24px;
 }
 
 .preview-content {
@@ -791,16 +812,27 @@ export default {
 }
 
 .preview-selected {
-    background-color: rgb(255, 230, 0) !important;
+    background-color: rgb(255, 255, 255) !important;
     color: #000000;
 }
 
 .history {
-    height: 50%;
+    height: 65%;
+    font-size: 20px;
 }
 
 .button-action {
     font-size: 1.2rem;
+}
+
+.setting-icon {
+    font-size: 28px;
+}
+
+.question-tooltip {
+    padding: 5px;
+    font-size: 25px;
+    color: $text !important;
 }
 </style>
 
@@ -891,10 +923,51 @@ export default {
     background-color: $sceondBackground;
     border-radius: 10px;
     height: calc(100% - 5rem);
-    overflow: scroll !important;
+    overflow-y: scroll !important;
 }
 
 .el-slider__bar {
     background-color: #777777 !important;
+}
+
+.el-dropdown-menu {
+    background-color: $sceondBackground !important;
+    border-color: $thirdBackground !important;
+    width: 400px;
+}
+
+.el-dropdown-menu__item {
+    color: $mainText !important;
+}
+
+.el-dropdown-menu__item:hover {
+    background-color: $thirdBackground !important;
+}
+
+.el-tooltip__popper {
+    padding: 5px 15px 5px 0px !important;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: $sceondBackground;
+}
+
+::-webkit-scrollbar-track:focus {
+    background: $thirdBackground;
+}
+
+::-webkit-scrollbar-track:hover {
+    background: $thirdBackground;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888888c9;
+    border-radius: 5px;
 }
 </style>

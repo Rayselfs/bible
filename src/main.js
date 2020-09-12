@@ -33,7 +33,12 @@ import {
     Tabs,
     TabPane,
     Slider,
-    Input
+    Input,
+    Dropdown,
+    DropdownMenu,
+    DropdownItem,
+    Tooltip,
+    Popover
 } from 'element-ui';
 Vue.use(Select);
 Vue.use(Option);
@@ -47,6 +52,11 @@ Vue.use(Tabs);
 Vue.use(TabPane);
 Vue.use(Slider);
 Vue.use(Input);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
+Vue.use(Tooltip);
+Vue.use(Popover);
 
 Vue.config.productionTip = false;
 
