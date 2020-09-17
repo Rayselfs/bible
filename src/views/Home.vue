@@ -16,12 +16,14 @@
                 </b-col>
                 <b-col cols="4" class="d-flex justify-content-end">
                     <el-input
+                        ref="search"
                         class="mr-2"
                         style="width: 250px"
                         placeholder="請搜尋經文"
                         suffix-icon="el-icon-search"
                         v-model="searchKey"
                         @change="search"
+                        @focus="searchFocus = true"
                         @blur="clearSearchKey"
                     >
                     </el-input>
@@ -202,7 +204,7 @@
         </el-container>
 
         <!-- 聖經 dropdown modal -->
-        <b-modal id="modal-bible" size="xl">
+        <b-modal id="modal-bible" size="lg">
             <template v-slot:modal-header>
                 <div class="w-100 d-flex justify-content-between">
                     <div>
@@ -226,16 +228,22 @@
             </template>
             <transition :name="transitionName" mode="out-in">
                 <div v-if="switchPage === 'book'" key="book">
-                    <el-button
-                        class="mb-3 ml-3"
+                    <div
                         v-for="(item, index) in bookSelector"
                         :key="index"
-                        type="info"
-                        :class="{ 'button-select': bookModel === item.value }"
-                        style="width: 160px;"
-                        @click="setBook(item.value, item.label)"
-                        >{{ item.label }}</el-button
+                        class="mb-3"
+                        :class="{ 'float-left': index !== 38, clearfix: index === 38 }"
                     >
+                        <el-button
+                            type="info"
+                            class="ml-3"
+                            :class="{ 'button-select': bookModel === item.value }"
+                            style="width: 170px; font-size: 20px;"
+                            @click="setBook(item.value, item.label)"
+                            >{{ item.label }}</el-button
+                        >
+                        <hr v-if="index === 38" />
+                    </div>
                 </div>
                 <div v-else-if="switchPage === 'chapter'" key="chapter">
                     <el-button
@@ -243,9 +251,9 @@
                         v-for="item in countChapter()"
                         :key="item"
                         type="info"
-                        style="width: 100px;"
+                        style="width: 85px; height: 85px; font-size: 26px"
                         @click="setChapter(item)"
-                        >第 {{ item }} {{ chapterUnit }}</el-button
+                        >{{ item }}</el-button
                     >
                 </div>
                 <div v-else key="section">
@@ -255,9 +263,9 @@
                         class="mb-3 ml-2"
                         type="info"
                         :disabled="sectionModel === item"
-                        style="width: 100px;"
+                        style="width: 85px; height: 85px; font-size: 26px"
                         @click="setSection(item)"
-                        >第 {{ item }} 節</el-button
+                        >{{ item }}</el-button
                     >
                 </div>
             </transition>
@@ -308,7 +316,8 @@ export default {
         nowChapter: null,
         nowSection: null,
         slideFontSize: 100,
-        searchKey: ''
+        searchKey: '',
+        searchFocus: false
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -317,6 +326,10 @@ export default {
         window.addEventListener('beforeunload', function() {
             if (slide && !slide.closed) slide.close();
         });
+
+        window.addEventListener('keyup', this.keyup);
+
+        window.addEventListener('keydown', this.keydown);
 
         this.allBook = collect(book);
         this.bookSelector = this.allBook.all();
@@ -366,6 +379,70 @@ export default {
             }
         },
         /**
+         * 防止keyboard做事
+         */
+        keydown(value) {
+            if (this.searchFocus) return;
+            // if (value.keyCode === 70 && value.metaKey) {
+            //     console.log('alt + a');
+            // }
+            const keyfilter = [38, 40];
+            if (keyfilter.includes(value.keyCode)) {
+                value.preventDefault();
+                return false;
+            }
+        },
+        /**
+         * 操控keyboard
+         */
+        keyup(value) {
+            if (this.searchFocus) return;
+            this.closeBibleSelector();
+
+            // 播放視窗打開，且為播放狀態
+            if (this.biblePlayStatus && this.slideWindowOpen) {
+                switch (value.keyCode) {
+                    case 38: // up
+                        this.controlSection(false);
+                        break;
+                    case 32: // space
+                    case 40: // down
+                        this.controlSection(true);
+                        break;
+                    case 37: // left
+                        this.controlChapter(false);
+                        break;
+                    case 39: // right
+                        this.controlChapter(true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // 播放視窗打開
+            if (this.slideWindowOpen) {
+                switch (value.keyCode) {
+                    case 66: // b
+                        this.controlPlay(!this.biblePlayStatus);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            switch (value.keyCode) {
+                case 71: // g
+                    this.openBibleSelector();
+                    break;
+                case 70: // f
+                    this.$refs.search.focus();
+                    break;
+                default:
+                    break;
+            }
+        },
+        /**
          * 經文選擇
          */
         openBibleSelector() {
@@ -374,6 +451,9 @@ export default {
             this.switchPage = 'book';
 
             this.$bvModal.show('modal-bible');
+        },
+        closeBibleSelector() {
+            this.$bvModal.hide('modal-bible');
         },
         /**
          * 選擇書卷
@@ -518,7 +598,7 @@ export default {
         openSlide() {
             if (slide && this.slideWindowOpen && !slide.closed) return;
 
-            slide = window.open('/list', 'slider');
+            slide = window.open('/list', 'slider', 'height=1920, width=1080');
             this.slideWindowOpen = true;
         },
         /**
@@ -701,6 +781,7 @@ export default {
             this.previewScrollToTop();
         },
         clearSearchKey() {
+            this.searchFocus = false;
             this.searchKey = '';
         },
         getBookName(bookIndex) {
@@ -753,6 +834,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/main.scss';
+
+hr {
+    border-top: 1px solid #ffffff;
+}
 
 .fade-top-edge::before {
     content: '';
