@@ -2,7 +2,9 @@
     <el-container class="bible">
         <el-header>
             <b-row class="navbar" align-h="between">
-                <b-col cols="4"></b-col>
+                <b-col cols="4">
+                    <img src="@/assets/media/hhc-icon.png" alt="" srcset="" width="40px" height="40px" />
+                </b-col>
                 <b-col cols="4" class="d-flex justify-content-center">
                     <el-select v-model="bookFilterSelectorModel" placeholder="請選擇" class="mr-3" @change="filterBook">
                         <el-option
