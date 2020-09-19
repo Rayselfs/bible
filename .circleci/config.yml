@@ -1,0 +1,25 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+# Use a package of configuration called an orb.
+jobs:
+    lint-and-test-build:
+        docker:
+            - image: circleci/node:12.18.2
+        steps:
+            - checkout
+            - run:
+                  name: Install packages
+                  command: npm install
+            - run:
+                  name: Run linter
+                  command: npx vue-cli-service lint
+            - run:
+                  name: Build and minify app
+                  command: npm build
+# Orchestrate or schedule a set of jobs
+workflows:
+    # Name the workflow "welcome"
+    welcome:
+        # Run the welcome/run job in its own container
+        jobs:
+            - lint-and-test-build
