@@ -342,6 +342,8 @@ export default {
         } else {
             localStorage.setItem('slideFontSize', this.slideFontSize);
         }
+
+        throw 'test';
     },
     methods: {
         changeSlideFontSize(value) {
