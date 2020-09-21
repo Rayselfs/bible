@@ -192,7 +192,7 @@
                                         <el-button
                                             class="button-action w-100 pt-3 pb-3"
                                             type="info"
-                                            @click="closeSlide()"
+                                            @click="closeWindow()"
                                             :disabled="!slideWindowOpen"
                                             >關閉視窗</el-button
                                         >
@@ -342,8 +342,36 @@ export default {
         } else {
             localStorage.setItem('slideFontSize', this.slideFontSize);
         }
+
+        this.openWindow();
+    },
+    mounted() {
+        this.infoMessage('請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕');
     },
     methods: {
+        /**
+         * 開啟視窗
+         */
+        openWindow() {
+            if (slide && this.slideWindowOpen && !slide.closed) return;
+
+            localStorage.removeItem('bibleSlideInfo');
+            localStorage.removeItem('bibleNowSection');
+            localStorage.setItem('biblePlayStatus', 0);
+            localStorage.setItem('bibleWindowNotification', 1);
+
+            slide = window.open('/list', 'slider');
+            this.slideWindowOpen = true;
+        },
+        /**
+         * 關閉視窗
+         */
+        closeWindow() {
+            if (!this.slideWindowOpen) return;
+
+            slide.close();
+            this.slideWindowOpen = false;
+        },
         changeSlideFontSize(value) {
             localStorage.setItem('slideFontSize', value);
         },
@@ -351,8 +379,8 @@ export default {
             const key = e.key;
 
             switch (key) {
-                case 'biblePlayStatus':
-                    this.closeSlide();
+                case 'bibleWindowNotification':
+                    this.closeWindow();
                     break;
                 default:
                     break;
@@ -560,7 +588,15 @@ export default {
             this.setBaseInfo(info);
             this.setPlayStatus();
 
-            this.openSlide();
+            // 檢查視窗是否開啟，未開啟 => 開啟, return
+            if (!slide || !this.slideWindowOpen) {
+                this.infoMessage(
+                    '視窗未開啟！請先將投影視窗拉至第二投影螢幕，按下 F11 全螢幕，並再次點選一次投影經節',
+                    8000
+                );
+                this.openWindow();
+                return;
+            }
 
             if (info.mode === 'search' || info.mode === 'history') {
                 this.bookName = this.getBookName(info.book);
@@ -596,12 +632,6 @@ export default {
         setPlayStatus() {
             this.biblePlayStatus = true;
             localStorage.setItem('biblePlayStatus', 1);
-        },
-        openSlide() {
-            if (slide && this.slideWindowOpen && !slide.closed) return;
-
-            slide = window.open('/list', 'slider', 'height=1920, width=1080');
-            this.slideWindowOpen = true;
         },
         /**
          * 儲存至歷史
@@ -663,15 +693,6 @@ export default {
         controlPlay(status = false) {
             this.biblePlayStatus = status;
             localStorage.setItem('biblePlayStatus', status ? 1 : 0);
-        },
-        /**
-         * 關閉slide
-         */
-        closeSlide() {
-            if (!this.slideWindowOpen) return;
-
-            slide.close();
-            this.slideWindowOpen = false;
         },
         getStorageInfo() {
             return JSON.parse(localStorage.getItem('bibleSlideInfo'));
@@ -797,6 +818,13 @@ export default {
             this.bookModel = null;
             this.chapterModel = null;
             this.sectionModel = null;
+        },
+        infoMessage(text, time = 6000) {
+            this.$message({
+                showClose: true,
+                message: text,
+                duration: time
+            });
         }
     }
 };

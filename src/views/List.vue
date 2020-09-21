@@ -26,16 +26,26 @@ export default {
         window.addEventListener('storage', this.localStorageChange);
 
         window.addEventListener('beforeunload', function() {
-            localStorage.setItem('biblePlayStatus', 0);
+            localStorage.setItem('bibleWindowNotification', 0);
         });
 
         this.setFontSize();
         this.setInfo();
 
-        this.play();
+        if (this.info) {
+            this.play();
+        }
     },
     mounted() {
-        this.jumpToSection();
+        if (this.info) {
+            this.jumpToSection();
+        }
+
+        this.$message({
+            showClose: true,
+            message: '請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕',
+            duration: 6000
+        });
     },
     data: () => ({
         info: null,
