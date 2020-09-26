@@ -2,8 +2,9 @@
     <el-container class="bible">
         <el-header>
             <b-row class="navbar" align-h="between">
-                <b-col cols="4">
-                    <img src="@/assets/media/hhc-icon.png" alt="" srcset="" width="40px" height="40px" />
+                <b-col cols="4" class="d-flex">
+                    <img src="@/assets/media/hhc-icon.png" alt="" srcset="" width="40px" height="40px" class="mr-2" />
+                    <h3 class="mt-1">家教會聖經系統</h3>
                 </b-col>
                 <b-col cols="4" class="d-flex justify-content-center">
                     <el-select v-model="bookFilterSelectorModel" placeholder="請選擇" class="mr-3" @change="filterBook">
@@ -57,26 +58,42 @@
                         <span class="mr-2" v-show="chapterModel">第{{ chapterModel }}{{ chapterUnit }}</span>
                         <span v-show="sectionModel">第{{ sectionModel }}節</span>)
                     </h4>
-                    <el-tooltip class="question-tooltip" effect="light" placement="bottom-end">
-                        <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
-                            <li class="mb-2">此區為預覽區域</li>
-                            <li class="mb-2">播放視窗還未開啟時，點選章節會自動開啟</li>
-                            <li class="mb-2">點選搜尋結果會跳轉到該章節</li>
-                        </ol>
-                        <i class="el-icon-question"></i>
-                    </el-tooltip>
+                    <div class="d-flex">
+                        <div
+                            class="mr-2 cursor-pointer main-text-hover"
+                            @click="clearList('previewList', '預覽列表', false)"
+                            style="font-size: 20px"
+                        >
+                            清除
+                        </div>
+                        <el-tooltip class="question-tooltip" effect="light" placement="bottom-end">
+                            <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
+                                <li class="mb-2">此區為預覽區域</li>
+                                <li class="mb-2">播放視窗還未開啟時，點選章節會自動開啟</li>
+                                <li class="mb-2">點選搜尋結果會跳轉到該章節</li>
+                            </ol>
+                            <i class="el-icon-question"></i>
+                        </el-tooltip>
+                    </div>
                 </div>
                 <div ref="preview" class="preview-wrapper box-bk">
                     <div class="preview-content p-3">
                         <div
+                            class="d-flex"
                             v-for="(item, index) in previewList"
                             :key="index"
                             :id="'section_' + item.section"
-                            class="mb-3 w-100 d-flex preview-item"
-                            :class="{ 'preview-selected': item.section === sectionModel }"
-                            @click="playSlide(item)"
-                            v-html="item.content"
-                        ></div>
+                        >
+                            <div
+                                class="mb-3 mr-3 w-100 d-flex preview-item"
+                                :class="{ 'preview-selected': item.section === sectionModel }"
+                                @click="playSlide(item)"
+                                v-html="item.content"
+                            ></div>
+                            <div class="main-text-hover cursor-pointer" @click="addBibleInfoToFolder(item)">
+                                <i class="el-icon-circle-plus-outline"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </el-aside>
@@ -84,35 +101,146 @@
                 <el-main>
                     <!-- 歷史紀錄與自訂 -->
                     <div class="history position-relative">
-                        <el-tooltip
-                            class="question-tooltip position-absolute"
-                            effect="light"
-                            placement="bottom-end"
-                            style="right: 0; top: 0; z-index: 2"
-                        >
-                            <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
-                                <li class="mb-2">最上面為最新查詢項目</li>
-                            </ol>
-                            <i class="el-icon-question"></i>
-                        </el-tooltip>
+                        <div class="position-absolute" style="right: 0; top: 0; z-index: 2">
+                            <div v-if="tabName === 'history'" class="d-flex">
+                                <div
+                                    class="mr-2 cursor-pointer main-text-hover"
+                                    @click="clearList('historyList', '歷史列表')"
+                                >
+                                    清除
+                                </div>
+                                <el-tooltip class="question-tooltip" effect="light" placement="bottom-end">
+                                    <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
+                                        <li class="mb-2">最上面為最新查詢項目</li>
+                                    </ol>
+                                    <i class="el-icon-question"></i>
+                                </el-tooltip>
+                            </div>
+                            <div v-else class="d-flex">
+                                <div class="mr-2 cursor-pointer main-text-hover" @click="saveFolderToLocal()">
+                                    儲存
+                                </div>
+                                <div class="mr-2 cursor-pointer main-text-hover" @click="clearFolderList()">
+                                    清除
+                                </div>
+                                <el-tooltip class="question-tooltip" effect="light" placement="bottom-end">
+                                    <ol slot="content" class="mb-0 mt-2" style="font-size: 16px">
+                                        <li class="mb-2">資料夾沒有儲存的話，重新整理或是關閉頁面將會重置</li>
+                                    </ol>
+                                    <i class="el-icon-question"></i>
+                                </el-tooltip>
+                            </div>
+                        </div>
                         <el-tabs v-model="tabName" type="card">
                             <el-tab-pane label="歷史紀錄" name="history">
                                 <transition-group name="fadeLeft" tag="div" class="p-3">
                                     <div
-                                        v-for="item in historyList"
+                                        v-for="(item, index) in historyList"
                                         :key="`${item.book}_${item.timestamp}`"
-                                        class="d-flex mb-3 preview-item"
-                                        @click="playSlide(item)"
+                                        class="d-flex"
+                                        style="animation-duration: 0.5s"
                                     >
-                                        <div>
-                                            <i class="el-icon-caret-right"></i>
+                                        <div class="d-flex mb-3 mr-2 preview-item w-100" @click="playSlide(item)">
+                                            <div>
+                                                <i class="el-icon-caret-right"></i>
+                                            </div>
+                                            <div v-html="item.content" class="d-flex"></div>
                                         </div>
-                                        <div v-html="item.content" class="d-flex"></div>
+                                        <div>
+                                            <i
+                                                @click="historyList.splice(index, 1)"
+                                                class="el-icon-delete-solid cursor-pointer main-text-hover"
+                                            ></i>
+                                        </div>
                                     </div>
                                 </transition-group>
                             </el-tab-pane>
                             <el-tab-pane label="自訂紀錄" name="folder">
-                                <div class="p-3">開發中</div>
+                                <div class="p-3">
+                                    <transition :name="folderTransition()" mode="out-in">
+                                        <div v-if="customLayer" key="main">
+                                            <div>
+                                                <span
+                                                    class="text-blue main-text-hover cursor-pointer"
+                                                    @click="addFolder"
+                                                    ><i class="el-icon-plus mr-2"></i>增加資料夾
+                                                </span>
+                                            </div>
+                                            <hr />
+                                            <div class="folder-wrapper">
+                                                <div
+                                                    v-for="(item, index) in customizeList"
+                                                    :key="index"
+                                                    class="d-flex justify-content-between pb-2 pt-2"
+                                                    :class="{ 'border-top': index > 0 }"
+                                                >
+                                                    <div
+                                                        class="d-flex w-100 mr-3 preview-item"
+                                                        @click="intoFolder(index)"
+                                                    >
+                                                        <div class="mr-2"><fa icon="folder" /></div>
+                                                        <div>{{ item.label }}</div>
+                                                    </div>
+                                                    <div class="d-flex">
+                                                        <div
+                                                            class="mr-3 cursor-pointer main-text-hover pt-1"
+                                                            @click="editFolder(index)"
+                                                        >
+                                                            <fa icon="edit" />
+                                                        </div>
+                                                        <div
+                                                            class="trash-text cursor-pointer pt-1"
+                                                            @click="deleteFolder(index)"
+                                                        >
+                                                            <fa icon="trash" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else key="sub">
+                                            <div class="mb-3">
+                                                <div class="d-flex">
+                                                    <div
+                                                        class="text-blue mr-2 cursor-pointer main-text-hover"
+                                                        @click="backToFolder()"
+                                                    >
+                                                        {{ customizeList[customizeSelected].label }}
+                                                    </div>
+                                                    <div><i class="el-icon-arrow-right"></i> 經文</div>
+                                                </div>
+                                                <hr />
+                                                <transition-group name="fadeLeft" tag="div">
+                                                    <div
+                                                        v-for="(item, index) in customizeList[customizeSelected].list"
+                                                        :key="`${item.book}_${item.timestamp}`"
+                                                        class="d-flex"
+                                                        style="animation-duration: 0.5s"
+                                                    >
+                                                        <div
+                                                            class="d-flex mb-3 mr-2 preview-item w-100"
+                                                            @click="playSlide(item)"
+                                                        >
+                                                            <div>{{ index + 1 }}.</div>
+                                                            <div v-html="item.content" class="d-flex"></div>
+                                                        </div>
+                                                        <div>
+                                                            <i
+                                                                @click="
+                                                                    customizeList[customizeSelected].list.splice(
+                                                                        index,
+                                                                        1
+                                                                    )
+                                                                "
+                                                                class="el-icon-delete-solid cursor-pointer main-text-hover"
+                                                            ></i>
+                                                        </div>
+                                                    </div>
+                                                </transition-group>
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
                             </el-tab-pane>
                         </el-tabs>
                     </div>
@@ -244,7 +372,7 @@
                             @click="setBook(item.value, item.label)"
                             >{{ item.label }}</el-button
                         >
-                        <hr v-if="index === 38" />
+                        <hr v-if="index === 38 && bookSelector.length > 39" />
                     </div>
                 </div>
                 <div v-else-if="switchPage === 'chapter'" key="chapter">
@@ -319,7 +447,10 @@ export default {
         nowSection: null,
         slideFontSize: 100,
         searchKey: '',
-        searchFocus: false
+        searchFocus: false,
+        customizeList: [],
+        customizeSelected: null,
+        customLayer: true
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -343,6 +474,11 @@ export default {
             localStorage.setItem('slideFontSize', this.slideFontSize);
         }
 
+        // 回朔folder
+        if (localStorage.getItem('bible-folder')) {
+            this.customizeList = JSON.parse(localStorage.getItem('bible-folder'));
+        }
+
         this.openWindow();
     },
     mounted() {
@@ -360,7 +496,7 @@ export default {
             localStorage.setItem('biblePlayStatus', 0);
             localStorage.setItem('bibleWindowNotification', 1);
 
-            slide = window.open('/list', 'slider');
+            slide = window.open('/list', 'slider', 'height=1080, width=1920');
             this.slideWindowOpen = true;
         },
         /**
@@ -407,15 +543,14 @@ export default {
                     this.bookModel = 39;
                     break;
             }
+            this.openBibleSelector();
         },
         /**
          * 防止keyboard做事
          */
         keydown(value) {
             if (this.searchFocus) return;
-            // if (value.keyCode === 70 && value.metaKey) {
-            //     console.log('alt + a');
-            // }
+
             const keyfilter = [38, 40];
             if (keyfilter.includes(value.keyCode)) {
                 value.preventDefault();
@@ -590,10 +725,7 @@ export default {
 
             // 檢查視窗是否開啟，未開啟 => 開啟, return
             if (!slide || !this.slideWindowOpen) {
-                this.infoMessage(
-                    '視窗未開啟！請先將投影視窗拉至第二投影螢幕，按下 F11 全螢幕，並再次點選一次投影經節',
-                    8000
-                );
+                this.infoMessage('請先將投影視窗拉至第二投影螢幕，按下 F11 全螢幕，並再次點選一次投影經節', 6000);
                 this.openWindow();
                 return;
             }
@@ -637,12 +769,11 @@ export default {
          * 儲存至歷史
          */
         saveToHistory(info) {
-            const date = new Date();
             this.historyList.unshift({
                 content: this.previewList[info.section - 1].content,
                 info: `${this.getBookName(info.book)},
                         ${info.chapter}章, ${info.section}節`,
-                timestamp: this.getTimestamp(date),
+                timestamp: this.getTimestamp(),
                 book: info.book,
                 chapter: info.chapter,
                 section: info.section,
@@ -681,11 +812,9 @@ export default {
         previewScrollToTop() {
             this.$refs.preview.scrollTop = 0;
         },
-        getTimestamp(date) {
+        getTimestamp() {
+            const date = new Date();
             return date.getTime();
-        },
-        getTS(date) {
-            return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
         },
         /**
          * 控制投放與否
@@ -736,10 +865,28 @@ export default {
             this.reset();
 
             if (searchResult.length === 0) {
+                this.$notify({
+                    title: '警告',
+                    message: '沒有結果，請重新設定條件',
+                    type: 'warning'
+                });
                 this.bookName = '沒有結果，請重新設定條件';
                 return;
             }
 
+            if (searchResult.length > 50) {
+                this.$notify({
+                    title: '警告',
+                    message: '搜尋結果過多，請重新設定關鍵字',
+                    type: 'warning'
+                });
+                return;
+            }
+
+            this.setSearchList(searchResult, keyword);
+            this.previewScrollToTop();
+        },
+        setSearchList(searchResult, keyword) {
             let chapterIndex;
             let bookModel;
             let chapterModel;
@@ -801,7 +948,6 @@ export default {
             });
 
             this.bookName = '搜尋結果';
-            this.previewScrollToTop();
         },
         clearSearchKey() {
             this.searchFocus = false;
@@ -820,11 +966,134 @@ export default {
             this.sectionModel = null;
         },
         infoMessage(text, time = 6000) {
-            this.$message({
-                showClose: true,
+            this.$notify.info({
+                title: '通知',
                 message: text,
                 duration: time
             });
+        },
+        clearList(list, listName = '', check = true) {
+            if (!check) {
+                this[list] = [];
+                return;
+            }
+
+            this.$confirm(`此操作將清除*${listName}*，是否繼續？`, '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+                .then(() => {
+                    this[list] = [];
+                })
+                .catch(() => {});
+        },
+        addFolder() {
+            this.searchFocus = true;
+            this.$prompt('請輸入新資料夾名稱', '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                beforeClose: (action, instance, done) => {
+                    if (action === 'confirm') {
+                        if (instance.inputValue === null) return;
+                        if (instance.inputValue === '') return;
+                    }
+                    done();
+                }
+            })
+                .then(({ value }) => {
+                    this.customizeList.push({
+                        label: value,
+                        list: []
+                    });
+                })
+                .catch(() => {
+                    this.searchFocus = false;
+                });
+        },
+        editFolder(index) {
+            this.searchFocus = true;
+            this.$prompt('修改資料夾名稱', '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                inputValue: this.customizeList[index].label
+            })
+                .then(({ value }) => {
+                    console.log(value);
+                    this.customizeList[index].label = value;
+                })
+                .catch(() => {
+                    this.searchFocus = false;
+                });
+        },
+        deleteFolder(index) {
+            this.$confirm(`確定刪除*${this.customizeList[index].label}*資料夾？`, '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+                .then(() => {
+                    this.customizeList.splice(index, 1);
+                    this.$notify({
+                        type: 'success',
+                        title: '成功',
+                        message: '删除成功!'
+                    });
+                })
+                .catch(() => {});
+        },
+        intoFolder(index) {
+            this.customizeSelected = index;
+            this.customLayer = false;
+        },
+        backToFolder() {
+            this.customLayer = true;
+            this.customizeSelected = null;
+        },
+        folderTransition() {
+            return this.customLayer ? 'left-transform' : 'right-transform';
+        },
+        addBibleInfoToFolder(item) {
+            if (this.customLayer) {
+                this.$notify.warning({
+                    title: '消息',
+                    message: '請先進入想要儲存的資料夾'
+                });
+                return;
+            }
+
+            this.customizeList[this.customizeSelected].list.push({
+                content: item.content,
+                info: `${this.getBookName(item.book)},
+                        ${item.chapter}章, ${item.section}節`,
+                timestamp: this.getTimestamp(),
+                book: item.book,
+                chapter: item.chapter,
+                section: item.section,
+                alphaSection: item.alphaSection,
+                omegaSection: item.omegaSection,
+                mode: 'history'
+            });
+        },
+        saveFolderToLocal() {
+            if (this.customizeList.length > 0) {
+                localStorage.setItem('bible-folder', JSON.stringify(this.customizeList));
+                this.$notify.success({
+                    title: '通知',
+                    message: '已經儲存列表'
+                });
+            } else {
+                this.$notify.warning({
+                    title: '通知',
+                    message: '沒有任何資料夾'
+                });
+            }
+        },
+        clearFolderList() {
+            this.customLayer = true;
+            this.customizeSelected = null;
+            this.customizeList = [];
+            localStorage.removeItem('bible-folder');
         }
     }
 };
@@ -949,6 +1218,10 @@ hr {
     font-size: 25px;
     color: $text !important;
 }
+
+.folder-wrapper {
+    font-size: 24px;
+}
 </style>
 
 <style lang="scss">
@@ -1061,6 +1334,19 @@ hr {
 
 .el-tooltip__popper {
     padding: 5px 15px 5px 0px !important;
+}
+
+.el-message-box {
+    border: 1px solid $thirdBackground !important;
+    background-color: $sceondBackground !important;
+}
+
+.el-message-box__title {
+    color: $mainText !important;
+}
+
+.el-message-box__content {
+    color: $mainText !important;
 }
 
 ::-webkit-scrollbar {

@@ -11,3 +11,33 @@ $text: #dddddd;
     background-color: $mainBackground;
     color: $mainText;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.text-blue {
+    color: skyblue;
+}
+
+.main-text-hover {
+    -webkit-transition: 0.2s ease-in-out;
+    -moz-transition: 0.2s ease-in-out;
+    -o-transition: 0.2s ease-in-out;
+    transition: 0.2s ease-in-out;
+}
+
+.main-text-hover:hover {
+    color: #ffc144;
+}
+
+.trash-text {
+    -webkit-transition: 0.2s ease-in-out;
+    -moz-transition: 0.2s ease-in-out;
+    -o-transition: 0.2s ease-in-out;
+    transition: 0.2s ease-in-out;
+}
+
+.trash-text:hover {
+    color: red;
+}

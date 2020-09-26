@@ -32,24 +32,36 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);
 
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faFolder, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+
+library.add(faFolder, faEdit, faTrash);
+
+Vue.component('fa', FontAwesomeIcon);
+
 Vue.config.productionTip = false;
 
 Vue.config.errorHandler = function(err) {
-    axios
-        .post(
-            '/services/T01BD3XG34H/B01B0M4C8EP/tVmlOr2VDHXL4W0yjYi06kzG',
-            {
-                username: '聖經系統-錯誤',
-                text: JSON.stringify(err)
-            },
-            {
-                baseURL: 'https://hooks.slack.com',
-                headers: { 'Content-type': 'application/x-www-form-urlencoded' }
-            }
-        )
-        .catch((err) => {
-            console.error(err);
-        });
+    if (process.env.NODE_ENV === 'development') {
+        console.error(err.message);
+    } else {
+        axios
+            .post(
+                '/services/T01BD3XG34H/B01B0M4C8EP/tVmlOr2VDHXL4W0yjYi06kzG',
+                {
+                    username: '聖經系統-錯誤',
+                    text: err.message
+                },
+                {
+                    baseURL: 'https://hooks.slack.com',
+                    headers: { 'Content-type': 'application/x-www-form-urlencoded' }
+                }
+            )
+            .catch((err) => {
+                console.error(err);
+            });
+    }
 };
 
 new Vue({
