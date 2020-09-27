@@ -6,7 +6,7 @@
                     v-for="(item, index) in list"
                     :key="index"
                     :id="'section_' + (index + 1)"
-                    class="d-flex"
+                    class="d-flex text-justify"
                     :style="{ 'font-size': fontSize }"
                 >
                     <div>{{ index + 1 }}.</div>

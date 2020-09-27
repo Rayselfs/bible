@@ -16,6 +16,14 @@
                         ></el-option>
                     </el-select>
                     <el-button type="info" @click="openBibleSelector()">選擇經文章節</el-button>
+                    <el-button
+                        type="info"
+                        :disabled="!slideWindowOpen || biblePlayStatus === null"
+                        :style="{ background: playBtnBg }"
+                        @click="controlPlay(!biblePlayStatus)"
+                    >
+                        {{ playBtnText }}
+                    </el-button>
                 </b-col>
                 <b-col cols="4" class="d-flex justify-content-end">
                     <el-input
@@ -58,11 +66,16 @@
                         <span class="mr-2" v-show="chapterModel">第{{ chapterModel }}{{ chapterUnit }}</span>
                         <span v-show="sectionModel">第{{ sectionModel }}節</span>)
                     </h4>
-                    <div class="d-flex">
+                    <div class="d-flex" style="font-size: 20px">
+                        <div class="mr-1">
+                            <i class="el-icon-caret-left" />
+                        </div>
+                        <div class="mr-2">
+                            <i class="el-icon-caret-right" />
+                        </div>
                         <div
                             class="mr-2 cursor-pointer main-text-hover"
                             @click="clearList('previewList', '預覽列表', false)"
-                            style="font-size: 20px"
                         >
                             清除
                         </div>
@@ -247,86 +260,49 @@
                     <div class="action mb-3">
                         <h4 class="mb-3 ml-3">操作</h4>
                         <div class="box-bk p-3">
-                            <b-row align-v="center">
-                                <b-col cols="8">
-                                    <b-row align-v="center">
-                                        <b-col cols="4">
-                                            <el-button
-                                                class="w-100 button-action"
-                                                type="info"
-                                                :disabled="!slideWindowOpen || !biblePlayStatus || nowChapter === 1"
-                                                @click="controlChapter(false)"
-                                                >上一章</el-button
-                                            >
-                                        </b-col>
-                                        <b-col cols="4">
-                                            <div class="mb-3">
-                                                <el-button
-                                                    class="w-100 button-action"
-                                                    type="info"
-                                                    :disabled="!slideWindowOpen || !biblePlayStatus || nowSection === 1"
-                                                    @click="controlSection(false)"
-                                                    >上一節</el-button
-                                                >
-                                            </div>
-                                            <div>
-                                                <el-button
-                                                    class="w-100 button-action"
-                                                    type="info"
-                                                    :disabled="
-                                                        !slideWindowOpen ||
-                                                            !biblePlayStatus ||
-                                                            nowSection === totalSection
-                                                    "
-                                                    @click="controlSection(true)"
-                                                    >下一節</el-button
-                                                >
-                                            </div>
-                                        </b-col>
-                                        <b-col cols="4">
-                                            <el-button
-                                                class="w-100 button-action"
-                                                type="info"
-                                                :disabled="
-                                                    !slideWindowOpen || !biblePlayStatus || nowChapter === totalChapter
-                                                "
-                                                @click="controlChapter(true)"
-                                            >
-                                                下一章</el-button
-                                            >
-                                        </b-col>
-                                    </b-row>
-                                </b-col>
-                                <b-col cols="4">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-3">
+                                    <el-button
+                                        class="w-100 button-action"
+                                        type="info"
+                                        :disabled="!slideWindowOpen || !biblePlayStatus || nowChapter === 1"
+                                        @click="controlChapter(false)"
+                                        >上一章</el-button
+                                    >
+                                </div>
+                                <div class="mr-3">
                                     <div class="mb-3">
                                         <el-button
-                                            class="button-action w-100 pt-3 pb-3"
+                                            class="w-100 button-action"
                                             type="info"
-                                            @click="controlPlay(true)"
-                                            :disabled="!slideWindowOpen || biblePlayStatus || !nowChapter"
-                                            >投射</el-button
-                                        >
-                                    </div>
-                                    <div class="mb-3">
-                                        <el-button
-                                            class="button-action w-100 pt-3 pb-3"
-                                            type="info"
-                                            @click="controlPlay(false)"
-                                            :disabled="!slideWindowOpen || !biblePlayStatus"
-                                            >黑幕</el-button
+                                            :disabled="!slideWindowOpen || !biblePlayStatus || nowSection === 1"
+                                            @click="controlSection(false)"
+                                            >上一節</el-button
                                         >
                                     </div>
                                     <div>
                                         <el-button
-                                            class="button-action w-100 pt-3 pb-3"
+                                            class="w-100 button-action"
                                             type="info"
-                                            @click="closeWindow()"
-                                            :disabled="!slideWindowOpen"
-                                            >關閉視窗</el-button
+                                            :disabled="
+                                                !slideWindowOpen || !biblePlayStatus || nowSection === totalSection
+                                            "
+                                            @click="controlSection(true)"
+                                            >下一節</el-button
                                         >
                                     </div>
-                                </b-col>
-                            </b-row>
+                                </div>
+                                <div>
+                                    <el-button
+                                        class="w-100 button-action"
+                                        type="info"
+                                        :disabled="!slideWindowOpen || !biblePlayStatus || nowChapter === totalChapter"
+                                        @click="controlChapter(true)"
+                                    >
+                                        下一章</el-button
+                                    >
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </el-main>
@@ -440,7 +416,7 @@ export default {
         tabName: 'history',
         historyList: [],
         slideWindowOpen: false,
-        biblePlayStatus: false,
+        biblePlayStatus: null,
         totalChapter: null,
         totalSection: null,
         nowChapter: null,
@@ -450,7 +426,9 @@ export default {
         searchFocus: false,
         customizeList: [],
         customizeSelected: null,
-        customLayer: true
+        customLayer: true,
+        playBtnText: '投放',
+        playBtnBg: 'initial'
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -479,7 +457,9 @@ export default {
             this.customizeList = JSON.parse(localStorage.getItem('bible-folder'));
         }
 
-        this.openWindow();
+        if (process.env.NODE_ENV !== 'development') {
+            this.openWindow();
+        }
     },
     mounted() {
         this.infoMessage('請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕');
@@ -507,6 +487,9 @@ export default {
 
             slide.close();
             this.slideWindowOpen = false;
+
+            this.controlPlay(false);
+            this.biblePlayStatus = null;
         },
         changeSlideFontSize(value) {
             localStorage.setItem('slideFontSize', value);
@@ -551,7 +534,7 @@ export default {
         keydown(value) {
             if (this.searchFocus) return;
 
-            const keyfilter = [38, 40];
+            const keyfilter = [38, 40, 32];
             if (keyfilter.includes(value.keyCode)) {
                 value.preventDefault();
                 return false;
@@ -703,16 +686,19 @@ export default {
             }
             this.$bvModal.hide('modal-bible');
 
-            this.jumpToSection();
+            this.jumpToSectionDelay();
         },
         /**
          * 跳至預覽節數位置
          */
-        jumpToSection() {
+        jumpToSectionDelay() {
             setTimeout(() => {
-                const index = this.sectionModel <= 1 ? this.sectionModel : this.sectionModel - 1;
-                window.location.hash = '#section_' + index;
-            }, 100);
+                this.jumpToSection();
+            }, 500);
+        },
+        jumpToSection() {
+            const index = this.sectionModel <= 1 ? this.sectionModel : this.sectionModel - 1;
+            window.location.hash = '#section_' + index;
         },
         /**
          * 開始投放
@@ -721,7 +707,6 @@ export default {
             this.sectionModel = info.section;
 
             this.setBaseInfo(info);
-            this.setPlayStatus();
 
             // 檢查視窗是否開啟，未開啟 => 開啟, return
             if (!slide || !this.slideWindowOpen) {
@@ -729,6 +714,8 @@ export default {
                 this.openWindow();
                 return;
             }
+
+            this.controlPlay(true);
 
             if (info.mode === 'search' || info.mode === 'history') {
                 this.bookName = this.getBookName(info.book);
@@ -759,13 +746,6 @@ export default {
             this.nowSection = info.section;
         },
         /**
-         * 設置投放狀態
-         */
-        setPlayStatus() {
-            this.biblePlayStatus = true;
-            localStorage.setItem('biblePlayStatus', 1);
-        },
-        /**
          * 儲存至歷史
          */
         saveToHistory(info) {
@@ -785,6 +765,15 @@ export default {
             if (this.historyList.length > 20) {
                 this.historyList.pop();
             }
+        },
+        /**
+         * 控制投放與否
+         */
+        controlPlay(status = false) {
+            this.biblePlayStatus = status;
+            this.playBtnText = status ? '關閉' : '投放';
+            this.playBtnBg = status ? 'red!important' : 'initial';
+            localStorage.setItem('biblePlayStatus', status ? 1 : 0);
         },
         countChapter() {
             return chapter[this.bookModel + 1] - chapter[this.bookModel];
@@ -816,13 +805,6 @@ export default {
             const date = new Date();
             return date.getTime();
         },
-        /**
-         * 控制投放與否
-         */
-        controlPlay(status = false) {
-            this.biblePlayStatus = status;
-            localStorage.setItem('biblePlayStatus', status ? 1 : 0);
-        },
         getStorageInfo() {
             return JSON.parse(localStorage.getItem('bibleSlideInfo'));
         },
@@ -853,6 +835,8 @@ export default {
             if (!status && this.nowSection > 1) this.nowSection--;
 
             localStorage.setItem('bibleNowSection', this.nowSection);
+            this.sectionModel = this.nowSection;
+            this.jumpToSection();
         },
         search(keyword) {
             if (keyword === '') return;
@@ -1006,6 +990,7 @@ export default {
                         label: value,
                         list: []
                     });
+                    this.searchFocus = false;
                 })
                 .catch(() => {
                     this.searchFocus = false;
@@ -1094,6 +1079,9 @@ export default {
             this.customizeSelected = null;
             this.customizeList = [];
             localStorage.removeItem('bible-folder');
+        },
+        controlPreviewChapter() {
+            console.log('test');
         }
     }
 };
@@ -1165,6 +1153,7 @@ hr {
 .preview-wrapper {
     height: calc(100% - 3rem);
     overflow-y: scroll;
+    scroll-behavior: smooth;
     font-size: 24px;
 }
 
