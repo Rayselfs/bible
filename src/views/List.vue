@@ -1,6 +1,6 @@
 <template>
     <el-container class="bible">
-        <el-main class="list">
+        <el-main class="list scroll-behavior-smooth">
             <div class="content">
                 <div
                     v-for="(item, index) in list"
@@ -113,6 +113,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/assets/css/main.scss';
+
 .title {
     line-height: 60px;
 }
@@ -120,12 +122,11 @@ export default {
 .list {
     height: 100vh !important;
     overflow: hidden;
-    scroll-behavior: smooth;
 }
 
 .layout {
     position: absolute;
-    background-color: #000000;
+    background-color: $mainBackground;
     width: 100%;
     height: 100vh;
     left: 0;

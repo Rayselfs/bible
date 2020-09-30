@@ -67,10 +67,10 @@
                         <span v-show="sectionModel">第{{ sectionModel }}節</span>)
                     </h4>
                     <div class="d-flex" style="font-size: 20px">
-                        <div class="mr-1">
+                        <div class="mr-1 main-text-hover cursor-pointer" @click="controlPreviewChapter(false)">
                             <i class="el-icon-caret-left" />
                         </div>
-                        <div class="mr-2">
+                        <div class="mr-2 main-text-hover cursor-pointer" @click="controlPreviewChapter(true)">
                             <i class="el-icon-caret-right" />
                         </div>
                         <div
@@ -114,6 +114,26 @@
                 <el-main>
                     <!-- 歷史紀錄與自訂 -->
                     <div class="history position-relative">
+                        <div class="position-absolute" style="left: 220px; top: 0; z-index: 2">
+                            <div v-if="tabName !== 'history'">
+                                <div v-if="customLayer">
+                                    <span class="text-blue main-text-hover cursor-pointer" @click="addFolder()"
+                                        ><i class="el-icon-plus mr-2"></i>新增資料夾
+                                    </span>
+                                </div>
+                                <div v-else>
+                                    <div class="d-flex">
+                                        <div
+                                            class="text-blue mr-2 cursor-pointer main-text-hover"
+                                            @click="backToFolder()"
+                                        >
+                                            {{ customizeList[customizeSelected].label }}
+                                        </div>
+                                        <div><i class="el-icon-arrow-right"></i> 經文</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="position-absolute" style="right: 0; top: 0; z-index: 2">
                             <div v-if="tabName === 'history'" class="d-flex">
                                 <div
@@ -171,86 +191,58 @@
                             <el-tab-pane label="自訂紀錄" name="folder">
                                 <div class="p-3">
                                     <transition :name="folderTransition()" mode="out-in">
-                                        <div v-if="customLayer" key="main">
-                                            <div>
-                                                <span
-                                                    class="text-blue main-text-hover cursor-pointer"
-                                                    @click="addFolder"
-                                                    ><i class="el-icon-plus mr-2"></i>增加資料夾
-                                                </span>
-                                            </div>
-                                            <hr />
-                                            <div class="folder-wrapper">
-                                                <div
-                                                    v-for="(item, index) in customizeList"
-                                                    :key="index"
-                                                    class="d-flex justify-content-between pb-2 pt-2"
-                                                    :class="{ 'border-top': index > 0 }"
-                                                >
+                                        <div v-if="customLayer" key="main" class="folder-wrapper">
+                                            <div
+                                                v-for="(item, index) in customizeList"
+                                                :key="index"
+                                                class="d-flex justify-content-between pb-2 pt-2"
+                                                :class="{ 'border-top': index > 0 }"
+                                            >
+                                                <div class="d-flex w-100 mr-3 preview-item" @click="intoFolder(index)">
+                                                    <div class="mr-2"><fa icon="folder" /></div>
+                                                    <div>{{ item.label }}</div>
+                                                </div>
+                                                <div class="d-flex">
                                                     <div
-                                                        class="d-flex w-100 mr-3 preview-item"
-                                                        @click="intoFolder(index)"
+                                                        class="mr-3 cursor-pointer main-text-hover pt-1"
+                                                        @click="editFolder(index)"
                                                     >
-                                                        <div class="mr-2"><fa icon="folder" /></div>
-                                                        <div>{{ item.label }}</div>
+                                                        <fa icon="edit" />
                                                     </div>
-                                                    <div class="d-flex">
-                                                        <div
-                                                            class="mr-3 cursor-pointer main-text-hover pt-1"
-                                                            @click="editFolder(index)"
-                                                        >
-                                                            <fa icon="edit" />
-                                                        </div>
-                                                        <div
-                                                            class="trash-text cursor-pointer pt-1"
-                                                            @click="deleteFolder(index)"
-                                                        >
-                                                            <fa icon="trash" />
-                                                        </div>
+                                                    <div
+                                                        class="trash-text cursor-pointer pt-1"
+                                                        @click="deleteFolder(index)"
+                                                    >
+                                                        <fa icon="trash" />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div v-else key="sub">
-                                            <div class="mb-3">
-                                                <div class="d-flex">
+                                            <transition-group name="fadeLeft" tag="div">
+                                                <div
+                                                    v-for="(item, index) in customizeList[customizeSelected].list"
+                                                    :key="`${item.book}_${item.timestamp}`"
+                                                    class="d-flex"
+                                                    style="animation-duration: 0.5s"
+                                                >
                                                     <div
-                                                        class="text-blue mr-2 cursor-pointer main-text-hover"
-                                                        @click="backToFolder()"
+                                                        class="d-flex mb-3 mr-2 preview-item w-100"
+                                                        @click="playSlide(item)"
                                                     >
-                                                        {{ customizeList[customizeSelected].label }}
+                                                        <div>{{ index + 1 }}.</div>
+                                                        <div v-html="item.content" class="d-flex"></div>
                                                     </div>
-                                                    <div><i class="el-icon-arrow-right"></i> 經文</div>
+                                                    <div>
+                                                        <i
+                                                            @click="
+                                                                customizeList[customizeSelected].list.splice(index, 1)
+                                                            "
+                                                            class="el-icon-delete-solid cursor-pointer main-text-hover"
+                                                        ></i>
+                                                    </div>
                                                 </div>
-                                                <hr />
-                                                <transition-group name="fadeLeft" tag="div">
-                                                    <div
-                                                        v-for="(item, index) in customizeList[customizeSelected].list"
-                                                        :key="`${item.book}_${item.timestamp}`"
-                                                        class="d-flex"
-                                                        style="animation-duration: 0.5s"
-                                                    >
-                                                        <div
-                                                            class="d-flex mb-3 mr-2 preview-item w-100"
-                                                            @click="playSlide(item)"
-                                                        >
-                                                            <div>{{ index + 1 }}.</div>
-                                                            <div v-html="item.content" class="d-flex"></div>
-                                                        </div>
-                                                        <div>
-                                                            <i
-                                                                @click="
-                                                                    customizeList[customizeSelected].list.splice(
-                                                                        index,
-                                                                        1
-                                                                    )
-                                                                "
-                                                                class="el-icon-delete-solid cursor-pointer main-text-hover"
-                                                            ></i>
-                                                        </div>
-                                                    </div>
-                                                </transition-group>
-                                            </div>
+                                            </transition-group>
                                         </div>
                                     </transition>
                                 </div>
@@ -261,7 +253,7 @@
                         <h4 class="mb-3 ml-3">操作</h4>
                         <div class="box-bk p-3">
                             <div class="d-flex align-items-center">
-                                <div class="mr-3">
+                                <div class="mr-4">
                                     <el-button
                                         class="w-100 button-action"
                                         type="info"
@@ -270,7 +262,7 @@
                                         >上一章</el-button
                                     >
                                 </div>
-                                <div class="mr-3">
+                                <div class="mr-4">
                                     <div class="mb-3">
                                         <el-button
                                             class="w-100 button-action"
@@ -379,6 +371,27 @@
                 <b-button size="sm" variant="secondary" @click="cancel()">關閉</b-button>
             </template>
         </b-modal>
+
+        <b-modal id="modal-folder">
+            <template v-slot:modal-header>
+                <div>請選擇資料夾</div>
+            </template>
+            <div
+                v-for="(item, index) in customizeList"
+                :key="index"
+                style="font-size: 24px"
+                class="pt-2 pb-2"
+                :class="{ 'border-top': index > 0 }"
+            >
+                <div class="d-flex w-100 mr-3 preview-item" @click="intoFolder(index)">
+                    <div class="mr-2"><fa icon="folder" /></div>
+                    <div>{{ item.label }}</div>
+                </div>
+            </div>
+            <template v-slot:modal-footer="{ cancel }">
+                <b-button size="sm" variant="secondary" @click="cancel()">關閉</b-button>
+            </template>
+        </b-modal>
     </el-container>
 </template>
 
@@ -398,7 +411,11 @@ export default {
         bookFilterSelector: [
             { label: '全部', value: 0 },
             { label: '舊約', value: 1 },
-            { label: '新約', value: 2 }
+            { label: '新約', value: 2 },
+            { label: '摩西五經', value: 3 },
+            { label: '大先知書', value: 4 },
+            { label: '小先知書', value: 5 },
+            { label: '四福音書', value: 6 }
         ],
         bookFilterSelectorModel: 0,
         bookModel: 0,
@@ -428,7 +445,8 @@ export default {
         customizeSelected: null,
         customLayer: true,
         playBtnText: '投放',
-        playBtnBg: 'initial'
+        playBtnBg: 'initial',
+        itemCache: null
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -523,6 +541,26 @@ export default {
                 // 新約
                 case 2:
                     this.bookSelector = this.allBook.filter((item) => item.value >= 39);
+                    this.bookModel = 39;
+                    break;
+                // 摩西五經
+                case 3:
+                    this.bookSelector = this.allBook.filter((item) => item.value < 5);
+                    this.bookModel = 0;
+                    break;
+                // 大先知書
+                case 4:
+                    this.bookSelector = this.allBook.filter((item) => item.value >= 22 && item.value < 27);
+                    this.bookModel = 22;
+                    break;
+                // 小先知書
+                case 5:
+                    this.bookSelector = this.allBook.filter((item) => item.value >= 27 && item.value < 39);
+                    this.bookModel = 27;
+                    break;
+                // 四福音書
+                case 6:
+                    this.bookSelector = this.allBook.filter((item) => item.value >= 39 && item.value < 43);
                     this.bookModel = 39;
                     break;
             }
@@ -835,8 +873,8 @@ export default {
             if (!status && this.nowSection > 1) this.nowSection--;
 
             localStorage.setItem('bibleNowSection', this.nowSection);
-            this.sectionModel = this.nowSection;
-            this.jumpToSection();
+            // this.sectionModel = this.nowSection;
+            // this.jumpToSection();
         },
         search(keyword) {
             if (keyword === '') return;
@@ -858,7 +896,7 @@ export default {
                 return;
             }
 
-            if (searchResult.length > 50) {
+            if (searchResult.length > 150) {
                 this.$notify({
                     title: '警告',
                     message: '搜尋結果過多，請重新設定關鍵字',
@@ -948,6 +986,7 @@ export default {
             this.bookModel = null;
             this.chapterModel = null;
             this.sectionModel = null;
+            this.bookName = '';
         },
         infoMessage(text, time = 6000) {
             this.$notify.info({
@@ -959,16 +998,18 @@ export default {
         clearList(list, listName = '', check = true) {
             if (!check) {
                 this[list] = [];
+                if (list === 'previewList') this.reset();
                 return;
             }
 
-            this.$confirm(`此操作將清除*${listName}*，是否繼續？`, '提示', {
+            this.$confirm(`此操作將清除 ${listName}，是否繼續？`, '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
                 type: 'warning'
             })
                 .then(() => {
                     this[list] = [];
+                    if (list === 'previewList') this.reset();
                 })
                 .catch(() => {});
         },
@@ -986,6 +1027,7 @@ export default {
                 }
             })
                 .then(({ value }) => {
+                    this.tabName = 'folder';
                     this.customizeList.push({
                         label: value,
                         list: []
@@ -1012,7 +1054,7 @@ export default {
                 });
         },
         deleteFolder(index) {
-            this.$confirm(`確定刪除*${this.customizeList[index].label}*資料夾？`, '提示', {
+            this.$confirm(`確定刪除 ${this.customizeList[index].label} 資料夾？`, '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
                 type: 'warning'
@@ -1030,6 +1072,13 @@ export default {
         intoFolder(index) {
             this.customizeSelected = index;
             this.customLayer = false;
+            this.tabName = 'folder';
+            this.$bvModal.hide('modal-folder');
+
+            if (this.itemCache) {
+                this.addBibleInfoToFolder(this.itemCache);
+                this.itemCache = null;
+            }
         },
         backToFolder() {
             this.customLayer = true;
@@ -1040,10 +1089,21 @@ export default {
         },
         addBibleInfoToFolder(item) {
             if (this.customLayer) {
+                if (this.customizeList.length == 0) {
+                    this.addFolder();
+                    this.$notify.info({
+                        title: '通知',
+                        message: '請先建立資料夾'
+                    });
+                    return;
+                }
+
                 this.$notify.warning({
                     title: '消息',
                     message: '請先進入想要儲存的資料夾'
                 });
+                this.$bvModal.show('modal-folder');
+                this.itemCache = item;
                 return;
             }
 
@@ -1080,8 +1140,17 @@ export default {
             this.customizeList = [];
             localStorage.removeItem('bible-folder');
         },
-        controlPreviewChapter() {
-            console.log('test');
+        controlPreviewChapter(status) {
+            if (!this.chapterModel) return;
+
+            const chapter = status ? this.chapterModel + 1 : this.chapterModel - 1;
+
+            if (chapter === 0) return;
+            if (chapter > this.countChapter()) return;
+
+            this.setChapter(chapter);
+            this.countSectionAmount();
+            this.setSection(1);
         }
     }
 };
