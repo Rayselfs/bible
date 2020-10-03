@@ -1240,7 +1240,6 @@ hr {
 .preview-wrapper {
     height: calc(100% - 3rem);
     overflow-y: scroll;
-    scroll-behavior: smooth;
     font-size: 24px;
 }
 

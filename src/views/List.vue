@@ -24,6 +24,15 @@
             </el-main>
         </el-container>
         <div v-show="!playStatus" class="layout"></div>
+        <div class="layout info-layout" :style="{ opacity: loading }">
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div>
+                    <p class="loading-info text-center">{{ bookName }}</p>
+                    <p class="loading-info text-center">第 {{ chapter }} {{ chapterLabel }}</p>
+                    <p class="loading-info text-center">第 {{ section }} 節</p>
+                </div>
+            </div>
+        </div>
     </el-container>
 </template>
 
@@ -69,7 +78,8 @@ export default {
         bookName: '',
         chapter: null,
         section: null,
-        chapterLabel: '章'
+        chapterLabel: '章',
+        loading: 0
     }),
     methods: {
         /**
@@ -127,6 +137,12 @@ export default {
         controlSection(section) {
             window.location.hash = '#section_' + section;
             this.section = section;
+
+            this.loading = 1;
+
+            setTimeout(() => {
+                this.loading = 0;
+            }, 2000);
         },
         /**
          * set book title
@@ -165,6 +181,13 @@ export default {
     top: 0;
 }
 
+.info-layout {
+    -webkit-transition: 0.2s ease-in-out;
+    -moz-transition: 0.2s ease-in-out;
+    -o-transition: 0.2s ease-in-out;
+    transition: 0.2s ease-in-out;
+}
+
 .bible-wrapper {
     background: #ffffff !important;
     color: #111111;
@@ -174,6 +197,10 @@ export default {
     font-size: 2.5rem;
     font-weight: 600;
     line-height: 60px;
+}
+
+.loading-info {
+    font-size: 6rem;
 }
 
 .content {
