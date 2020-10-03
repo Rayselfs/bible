@@ -1,25 +1,36 @@
 <template>
-    <el-container class="bible">
-        <el-main class="list scroll-behavior-smooth">
-            <div class="content">
-                <div
-                    v-for="(item, index) in list"
-                    :key="index"
-                    :id="'section_' + (index + 1)"
-                    class="d-flex text-justify"
-                    :style="{ 'font-size': fontSize }"
-                >
-                    <div>{{ index + 1 }}.</div>
-                    <div>{{ item }}</div>
+    <el-container class="bible position-relative">
+        <el-header class="d-flex justify-content-center bible-wrapper">
+            <p class="bible-info mb-0">
+                <span class="mr-3">{{ bookName }}</span>
+                <span v-show="chapter" class="mr-3">第 {{ chapter }} {{ chapterLabel }}</span>
+                <span v-show="section">第 {{ section }} 節</span>
+            </p>
+        </el-header>
+        <el-container>
+            <el-main class="list scroll-behavior-smooth">
+                <div>
+                    <div
+                        v-for="(item, index) in list"
+                        :key="index"
+                        :id="'section_' + (index + 1)"
+                        class="d-flex text-justify"
+                        :style="{ 'font-size': fontSize }"
+                    >
+                        <div>{{ index + 1 }}.</div>
+                        <div>{{ item }}</div>
+                    </div>
                 </div>
-            </div>
-        </el-main>
+            </el-main>
+        </el-container>
         <div v-show="!playStatus" class="layout"></div>
     </el-container>
 </template>
 
 <script>
 import { bible } from '@/assets/js/bible';
+import { book } from '@/assets/js/function';
+import { collect } from 'collect.js';
 export default {
     created() {
         // 監聽storage
@@ -35,6 +46,9 @@ export default {
         if (this.info) {
             this.play();
         }
+
+        // set book info
+        this.setBookInfo();
     },
     mounted() {
         if (this.info) {
@@ -51,7 +65,11 @@ export default {
         info: null,
         fontSize: '16px',
         list: [],
-        playStatus: true
+        playStatus: true,
+        bookName: '',
+        chapter: null,
+        section: null,
+        chapterLabel: '章'
     }),
     methods: {
         /**
@@ -99,6 +117,7 @@ export default {
             for (let index = this.info.alphaSection; index < this.info.omegaSection; index++) {
                 this.list.push(bible[index].split(' ')[1]);
             }
+            this.setBookInfo();
         },
         jumpToSection() {
             setTimeout(() => {
@@ -107,6 +126,17 @@ export default {
         },
         controlSection(section) {
             window.location.hash = '#section_' + section;
+            this.section = section;
+        },
+        setBookInfo() {
+            if (!this.info) return;
+
+            const bookItem = collect(book).first((item) => item.value == this.info.book);
+            this.bookName = bookItem.label;
+            this.chapter = this.info.chapter;
+            this.section = this.info.section;
+
+            this.chapterLabel = this.info.book === 18 ? '篇' : '章';
         }
     }
 };
@@ -120,7 +150,6 @@ export default {
 }
 
 .list {
-    height: 100vh !important;
     overflow: hidden;
 }
 
@@ -133,7 +162,14 @@ export default {
     top: 0;
 }
 
-.content {
-    padding-bottom: 100vh;
+.bible-wrapper {
+    background: #ffffff !important;
+    color: #111111;
+}
+
+.bible-info {
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 60px;
 }
 </style>
