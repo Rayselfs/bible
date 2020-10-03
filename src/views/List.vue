@@ -9,7 +9,7 @@
         </el-header>
         <el-container>
             <el-main class="list scroll-behavior-smooth">
-                <div>
+                <div class="content">
                     <div
                         v-for="(item, index) in list"
                         :key="index"
@@ -174,5 +174,9 @@ export default {
     font-size: 2.5rem;
     font-weight: 600;
     line-height: 60px;
+}
+
+.content {
+    padding-bottom: 100vh;
 }
 </style>
