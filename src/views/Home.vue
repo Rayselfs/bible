@@ -483,9 +483,7 @@ export default {
             this.customizeList = JSON.parse(localStorage.getItem('bible-folder'));
         }
 
-        if (process.env.NODE_ENV !== 'development') {
-            this.openWindow();
-        }
+        this.openWindow();
     },
     mounted() {
         this.infoMessage('請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕');

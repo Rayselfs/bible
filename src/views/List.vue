@@ -42,13 +42,13 @@ export default {
 
         this.setFontSize();
         this.setInfo();
+        this.setBookTitle();
 
         if (this.info) {
             this.play();
+            return;
         }
-
-        // set book info
-        this.setBookInfo();
+        this.playStatus = false;
     },
     mounted() {
         if (this.info) {
@@ -117,7 +117,7 @@ export default {
             for (let index = this.info.alphaSection; index < this.info.omegaSection; index++) {
                 this.list.push(bible[index].split(' ')[1]);
             }
-            this.setBookInfo();
+            this.setBookTitle();
         },
         jumpToSection() {
             setTimeout(() => {
@@ -128,7 +128,10 @@ export default {
             window.location.hash = '#section_' + section;
             this.section = section;
         },
-        setBookInfo() {
+        /**
+         * set book title
+         */
+        setBookTitle() {
             if (!this.info) return;
 
             const bookItem = collect(book).first((item) => item.value == this.info.book);
