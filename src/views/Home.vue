@@ -372,9 +372,16 @@
             </template>
         </b-modal>
 
-        <b-modal id="modal-folder">
+        <b-modal id="modal-folder" v-model="modalFolder">
             <template v-slot:modal-header>
-                <div>請選擇資料夾</div>
+                <div class="w-100 d-flex justify-content-between">
+                    <div>請選擇資料夾</div>
+                    <div>
+                        <span class="text-blue main-text-hover cursor-pointer" @click="addFolder()"
+                            ><i class="el-icon-plus mr-2"></i>新增資料夾
+                        </span>
+                    </div>
+                </div>
             </template>
             <div
                 v-for="(item, index) in customizeList"
@@ -446,7 +453,8 @@ export default {
         customLayer: true,
         playBtnText: '投放',
         playBtnBg: 'initial',
-        itemCache: null
+        itemCache: null,
+        modalFolder: false
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -570,7 +578,7 @@ export default {
          * 防止keyboard做事
          */
         keydown(value) {
-            if (this.searchFocus) return;
+            if (this.searchFocus || this.modalFolder) return;
 
             const keyfilter = [38, 40, 32];
             if (keyfilter.includes(value.keyCode)) {
@@ -582,7 +590,7 @@ export default {
          * 操控keyboard
          */
         keyup(value) {
-            if (this.searchFocus) return;
+            if (this.searchFocus || this.modalFolder) return;
             this.closeBibleSelector();
 
             // 播放視窗打開，且為播放狀態
@@ -1015,6 +1023,8 @@ export default {
         },
         addFolder() {
             this.searchFocus = true;
+            this.$bvModal.hide('modal-folder');
+
             this.$prompt('請輸入新資料夾名稱', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
@@ -1135,10 +1145,20 @@ export default {
             }
         },
         clearFolderList() {
-            this.customLayer = true;
-            this.customizeSelected = null;
-            this.customizeList = [];
-            localStorage.removeItem('bible-folder');
+            if (this.customizeList.length === 0) return;
+
+            this.$confirm(`確定刪除所有資料夾？`, '提示', {
+                confirmButtonText: '確定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            })
+                .then(() => {
+                    this.customLayer = true;
+                    this.customizeSelected = null;
+                    this.customizeList = [];
+                    localStorage.removeItem('bible-folder');
+                })
+                .catch(() => {});
         },
         controlPreviewChapter(status) {
             if (!this.chapterModel) return;
