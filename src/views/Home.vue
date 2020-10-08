@@ -1,6 +1,6 @@
 <template>
-    <el-container class="bible">
-        <el-header>
+    <el-container class="bible-control">
+        <el-header class="header">
             <b-row class="navbar" align-h="between">
                 <b-col cols="4" class="d-flex">
                     <img src="@/assets/media/hhc-icon.png" alt="" srcset="" width="40px" height="40px" class="mr-2" />
@@ -15,7 +15,7 @@
                             :value="item.value"
                         ></el-option>
                     </el-select>
-                    <el-button type="info" @click="openBibleSelector()">選擇經文章節</el-button>
+                    <el-button type="info" @click="openBibleSelector()">選擇</el-button>
                     <el-button
                         type="info"
                         :disabled="!slideWindowOpen || biblePlayStatus === null"
@@ -30,7 +30,7 @@
                         ref="search"
                         class="mr-2"
                         style="width: 250px"
-                        placeholder="請搜尋經文"
+                        placeholder="搜尋經文"
                         suffix-icon="el-icon-search"
                         v-model="searchKey"
                         @change="search"
@@ -192,57 +192,84 @@
                                 <div class="p-3">
                                     <transition :name="folderTransition()" mode="out-in">
                                         <div v-if="customLayer" key="main" class="folder-wrapper">
-                                            <div
-                                                v-for="(item, index) in customizeList"
-                                                :key="index"
-                                                class="d-flex justify-content-between pb-2 pt-2"
-                                                :class="{ 'border-top': index > 0 }"
-                                            >
-                                                <div class="d-flex w-100 mr-3 preview-item" @click="intoFolder(index)">
-                                                    <div class="mr-2"><fa icon="folder" /></div>
-                                                    <div>{{ item.label }}</div>
-                                                </div>
-                                                <div class="d-flex">
+                                            <draggable tag="div" v-model="customizeList" v-bind="dragOptions">
+                                                <transition-group type="transition" name="bible-flip-list">
                                                     <div
-                                                        class="mr-3 cursor-pointer main-text-hover pt-1"
-                                                        @click="editFolder(index)"
+                                                        v-for="(item, index) in customizeList"
+                                                        :key="index"
+                                                        class="d-flex justify-content-between pr-3"
                                                     >
-                                                        <fa icon="edit" />
+                                                        <div
+                                                            class="d-flex w-100 mr-3 preview-item pt-2 pb-2 pl-3"
+                                                            @click="intoFolder(index)"
+                                                        >
+                                                            <div class="mr-2"><fa icon="folder" /></div>
+                                                            <div>{{ item.label }}</div>
+                                                        </div>
+                                                        <div class="d-flex pt-1">
+                                                            <div
+                                                                class="mr-3 cursor-pointer main-text-hover pt-1"
+                                                                @click="editFolder(index)"
+                                                            >
+                                                                <fa icon="edit" />
+                                                            </div>
+                                                            <div
+                                                                class="trash-text cursor-pointer pt-1"
+                                                                @click="deleteFolder(index)"
+                                                            >
+                                                                <fa icon="trash" />
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div
-                                                        class="trash-text cursor-pointer pt-1"
-                                                        @click="deleteFolder(index)"
-                                                    >
-                                                        <fa icon="trash" />
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                </transition-group>
+                                            </draggable>
                                         </div>
                                         <div v-else key="sub">
-                                            <transition-group name="fadeLeft" tag="div">
-                                                <div
-                                                    v-for="(item, index) in customizeList[customizeSelected].list"
-                                                    :key="`${item.book}_${item.timestamp}`"
-                                                    class="d-flex"
-                                                    style="animation-duration: 0.5s"
+                                            <draggable
+                                                tag="div"
+                                                :list="customizeList[customizeSelected].list"
+                                                v-bind="dragOptions"
+                                                handle=".list-handle"
+                                                @change="folderSubLog"
+                                            >
+                                                <transition-group
+                                                    name="fadeLeft"
+                                                    tag="div"
+                                                    :class="{
+                                                        'folder-item-empty-area':
+                                                            customizeList[customizeSelected].list.length === 0
+                                                    }"
                                                 >
                                                     <div
-                                                        class="d-flex mb-3 mr-2 preview-item w-100"
-                                                        @click="playSlide(item)"
+                                                        v-for="(item, index) in customizeList[customizeSelected].list"
+                                                        :key="`${item.book}_${item.timestamp}`"
+                                                        class="d-flex"
+                                                        style="animation-duration: 0.5s"
                                                     >
-                                                        <div>{{ index + 1 }}.</div>
-                                                        <div v-html="item.content" class="d-flex"></div>
+                                                        <div class="list-handle mr-2 pt-1 cursor-pointer">
+                                                            <fa icon="bars" />
+                                                        </div>
+                                                        <div
+                                                            class="d-flex mb-3 mr-2 preview-item w-100"
+                                                            @click="playSlide(item)"
+                                                        >
+                                                            <div>{{ index + 1 }}.</div>
+                                                            <div v-html="item.content" class="d-flex"></div>
+                                                        </div>
+                                                        <div>
+                                                            <i
+                                                                @click="
+                                                                    customizeList[customizeSelected].list.splice(
+                                                                        index,
+                                                                        1
+                                                                    )
+                                                                "
+                                                                class="el-icon-delete-solid cursor-pointer main-text-hover"
+                                                            ></i>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <i
-                                                            @click="
-                                                                customizeList[customizeSelected].list.splice(index, 1)
-                                                            "
-                                                            class="el-icon-delete-solid cursor-pointer main-text-hover"
-                                                        ></i>
-                                                    </div>
-                                                </div>
-                                            </transition-group>
+                                                </transition-group>
+                                            </draggable>
                                         </div>
                                     </transition>
                                 </div>
@@ -302,7 +329,7 @@
         </el-container>
 
         <!-- 聖經 dropdown modal -->
-        <b-modal id="modal-bible" size="lg">
+        <b-modal id="modal-bible" size="lg" content-class="bible-selector-modal-content">
             <template v-slot:modal-header>
                 <div class="w-100 d-flex justify-content-between">
                     <div>
@@ -345,11 +372,10 @@
                 </div>
                 <div v-else-if="switchPage === 'chapter'" key="chapter">
                     <el-button
-                        class="mb-3 ml-2"
-                        v-for="item in countChapter()"
+                        class="mb-3 ml-2 selector-button"
+                        v-for="item in countChapterAmount()"
                         :key="item"
                         type="info"
-                        style="width: 85px; height: 85px; font-size: 26px"
                         @click="setChapter(item)"
                         >{{ item }}</el-button
                     >
@@ -358,10 +384,9 @@
                     <el-button
                         v-for="item in countSectionAmount()"
                         :key="item"
-                        class="mb-3 ml-2"
+                        class="mb-3 ml-2 selector-button"
                         type="info"
                         :disabled="sectionModel === item"
-                        style="width: 85px; height: 85px; font-size: 26px"
                         @click="setSection(item)"
                         >{{ item }}</el-button
                     >
@@ -372,7 +397,7 @@
             </template>
         </b-modal>
 
-        <b-modal id="modal-folder" v-model="modalFolder">
+        <b-modal id="modal-folder" v-model="modalFolder" content-class="bible-selector-modal-content">
             <template v-slot:modal-header>
                 <div class="w-100 d-flex justify-content-between">
                     <div>請選擇資料夾</div>
@@ -409,6 +434,12 @@ import collect from 'collect.js';
 import Fuse from 'fuse.js';
 
 let slide;
+
+let autoSaveTimer = {
+    status: false,
+    clock: null,
+    time: 0
+};
 
 export default {
     name: 'Home',
@@ -454,7 +485,13 @@ export default {
         playBtnText: '投放',
         playBtnBg: 'initial',
         itemCache: null,
-        modalFolder: false
+        modalFolder: false,
+        dragOptions: {
+            animation: 200,
+            group: 'description',
+            disabled: false,
+            ghostClass: 'ghost'
+        }
     }),
     created() {
         window.addEventListener('storage', this.localStorageChange);
@@ -478,12 +515,10 @@ export default {
             localStorage.setItem('slideFontSize', this.slideFontSize);
         }
 
-        // 回朔folder
-        if (localStorage.getItem('bible-folder')) {
-            this.customizeList = JSON.parse(localStorage.getItem('bible-folder'));
-        }
+        this.recallFolder();
+        this.recallHistory();
 
-        this.openWindow();
+        // this.openWindow();
     },
     mounted() {
         this.infoMessage('請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕');
@@ -515,9 +550,15 @@ export default {
             this.controlPlay(false);
             this.biblePlayStatus = null;
         },
+        /**
+         * save font size to localstorage
+         */
         changeSlideFontSize(value) {
             localStorage.setItem('slideFontSize', value);
         },
+        /**
+         * listen localstorage
+         */
         localStorageChange(e) {
             const key = e.key;
 
@@ -573,7 +614,7 @@ export default {
             this.openBibleSelector();
         },
         /**
-         * 防止keyboard做事
+         * listen keydown
          */
         keydown(value) {
             if (this.searchFocus || this.modalFolder) return;
@@ -585,7 +626,7 @@ export default {
             }
         },
         /**
-         * 操控keyboard
+         * listen keyup (快捷鍵)
          */
         keyup(value) {
             if (this.searchFocus || this.modalFolder) return;
@@ -644,6 +685,9 @@ export default {
 
             this.$bvModal.show('modal-bible');
         },
+        /**
+         * close 聖經選擇 modal
+         */
         closeBibleSelector() {
             this.$bvModal.hide('modal-bible');
         },
@@ -733,13 +777,16 @@ export default {
             this.jumpToSectionDelay();
         },
         /**
-         * 跳至預覽節數位置
+         * 延遲 跳至預覽節數位置
          */
         jumpToSectionDelay() {
             setTimeout(() => {
                 this.jumpToSection();
             }, 500);
         },
+        /**
+         * 跳至預覽節數位置
+         */
         jumpToSection() {
             const index = this.sectionModel <= 1 ? this.sectionModel : this.sectionModel - 1;
             window.location.hash = '#section_' + index;
@@ -783,7 +830,7 @@ export default {
             localStorage.setItem('bibleSlideInfo', JSON.stringify(info));
             localStorage.setItem('bibleNowSection', info.section);
 
-            this.totalChapter = this.countChapter();
+            this.totalChapter = this.countChapterAmount();
             this.totalSection = info.omegaSection - info.alphaSection;
 
             this.nowChapter = info.chapter;
@@ -793,6 +840,9 @@ export default {
          * 儲存至歷史
          */
         saveToHistory(info) {
+            const lastItem = this.historyList[0];
+            if (lastItem && info.book == lastItem.book && info.chapter == lastItem.chapter) return;
+
             this.historyList.unshift({
                 content: this.previewList[info.section - 1].content,
                 info: `${this.getBookName(info.book)},
@@ -809,6 +859,7 @@ export default {
             if (this.historyList.length > 20) {
                 this.historyList.pop();
             }
+            this.autoSave();
         },
         /**
          * 控制投放與否
@@ -819,9 +870,15 @@ export default {
             this.playBtnBg = status ? 'red!important' : 'initial';
             localStorage.setItem('biblePlayStatus', status ? 1 : 0);
         },
-        countChapter() {
+        /**
+         * 計算章數
+         */
+        countChapterAmount() {
             return chapter[this.bookModel + 1] - chapter[this.bookModel];
         },
+        /**
+         * 計算節數
+         */
         countSectionAmount() {
             if (!this.chapterModel) {
                 return null;
@@ -1011,6 +1068,7 @@ export default {
             this.$confirm(`此操作將清除 ${listName}，是否繼續？`, '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
+                customClass: 'bible-el-message-box',
                 type: 'warning'
             })
                 .then(() => {
@@ -1026,6 +1084,7 @@ export default {
             this.$prompt('請輸入新資料夾名稱', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
+                customClass: 'bible-el-message-box',
                 beforeClose: (action, instance, done) => {
                     if (action === 'confirm') {
                         if (instance.inputValue === null) return;
@@ -1041,6 +1100,7 @@ export default {
                         list: []
                     });
                     this.searchFocus = false;
+                    this.autoSave();
                 })
                 .catch(() => {
                     this.searchFocus = false;
@@ -1051,11 +1111,12 @@ export default {
             this.$prompt('修改資料夾名稱', '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
+                customClass: 'bible-el-message-box',
                 inputValue: this.customizeList[index].label
             })
                 .then(({ value }) => {
-                    console.log(value);
                     this.customizeList[index].label = value;
+                    this.autoSave();
                 })
                 .catch(() => {
                     this.searchFocus = false;
@@ -1065,6 +1126,7 @@ export default {
             this.$confirm(`確定刪除 ${this.customizeList[index].label} 資料夾？`, '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
+                customClass: 'bible-el-message-box',
                 type: 'warning'
             })
                 .then(() => {
@@ -1074,6 +1136,8 @@ export default {
                         title: '成功',
                         message: '删除成功!'
                     });
+
+                    this.autoSave();
                 })
                 .catch(() => {});
         },
@@ -1127,20 +1191,15 @@ export default {
                 omegaSection: item.omegaSection,
                 mode: 'history'
             });
+
+            this.autoSave();
         },
         saveFolderToLocal() {
-            if (this.customizeList.length > 0) {
-                localStorage.setItem('bible-folder', JSON.stringify(this.customizeList));
-                this.$notify.success({
-                    title: '通知',
-                    message: '已經儲存列表'
-                });
-            } else {
-                this.$notify.warning({
-                    title: '通知',
-                    message: '沒有任何資料夾'
-                });
-            }
+            localStorage.setItem('bible-folder', JSON.stringify(this.customizeList));
+            this.$notify.success({
+                title: '通知',
+                message: '已經儲存列表'
+            });
         },
         clearFolderList() {
             if (this.customizeList.length === 0) return;
@@ -1148,6 +1207,7 @@ export default {
             this.$confirm(`確定刪除所有資料夾？`, '提示', {
                 confirmButtonText: '確定',
                 cancelButtonText: '取消',
+                customClass: 'bible-el-message-box',
                 type: 'warning'
             })
                 .then(() => {
@@ -1158,59 +1218,88 @@ export default {
                 })
                 .catch(() => {});
         },
+        /**
+         * 預覽區快速跳章
+         */
         controlPreviewChapter(status) {
             if (!this.chapterModel) return;
 
             const chapter = status ? this.chapterModel + 1 : this.chapterModel - 1;
 
             if (chapter === 0) return;
-            if (chapter > this.countChapter()) return;
+            if (chapter > this.countChapterAmount()) return;
 
             this.setChapter(chapter);
             this.countSectionAmount();
             this.setSection(1);
+        },
+        /**
+         * 監控folder sub list 是否拖曳增加
+         */
+        folderSubLog() {
+            this.autoSave();
+        },
+        /**
+         * auto save folder
+         */
+        autoSave() {
+            if (autoSaveTimer.status) {
+                autoSaveTimer.time = 0;
+                return;
+            }
+
+            autoSaveTimer.status = true;
+            autoSaveTimer.clock = setInterval(() => {
+                autoSaveTimer.time++;
+                if (autoSaveTimer.time >= 15) {
+                    window.clearInterval(autoSaveTimer.clock);
+                    autoSaveTimer.time = 0;
+                    autoSaveTimer.status = false;
+
+                    localStorage.setItem('bible-folder', JSON.stringify(this.customizeList));
+                    localStorage.setItem(
+                        'bible-history-list',
+                        JSON.stringify({
+                            list: this.historyList,
+                            time: this.getTimestamp()
+                        })
+                    );
+                }
+            }, 1000);
+        },
+        /**
+         * 回朔 folder
+         */
+        recallFolder() {
+            if (localStorage.getItem('bible-folder'))
+                this.customizeList = JSON.parse(localStorage.getItem('bible-folder'));
+        },
+        /**
+         * 回朔 histroy
+         */
+        recallHistory() {
+            let history = localStorage.getItem('bible-history-list');
+            if (!history) return;
+
+            history = JSON.parse(history);
+            // one hour
+            if (history.time + 3600000 < this.getTimestamp()) {
+                localStorage.removeItem('bible-history-list');
+                return;
+            }
+            this.historyList = history.list;
         }
     }
 };
 </script>
 
-<style>
-.left-transform-leave-active,
-.left-transform-enter-active {
-    transition: all 0.2s;
-}
-
-.left-transform-enter {
-    opacity: 0;
-    transform: translateX(-30px);
-}
-
-.left-transform-leave-to {
-    opacity: 0;
-    transform: translateX(30px);
-}
-
-.right-transform-leave-active,
-.right-transform-enter-active {
-    transition: all 0.2s;
-}
-
-.right-transform-enter {
-    opacity: 0;
-    transform: translateX(30px);
-}
-
-.right-transform-leave-to {
-    opacity: 0;
-    transform: translateX(-30px);
-}
-</style>
-
 <style lang="scss" scoped>
 @import '@/assets/css/main.scss';
 
-hr {
-    border-top: 1px solid #ffffff;
+.bible-control {
+    background-color: $mainBackground;
+    color: $mainText;
+    min-width: 1366px;
 }
 
 .fade-top-edge::before {
@@ -1237,6 +1326,13 @@ hr {
     height: 5rem;
 }
 
+.selector-button {
+    width: 68px;
+    height: 68px;
+    font-size: 20px;
+    padding: 10px 10px;
+}
+
 .preview-wrapper {
     height: calc(100% - 3rem);
     overflow-y: scroll;
@@ -1248,7 +1344,7 @@ hr {
 }
 
 .box-bk {
-    background-color: $sceondBackground;
+    background-color: $secondBackground;
     border-radius: 10px;
 }
 
@@ -1275,6 +1371,11 @@ hr {
     color: #000000;
 }
 
+.button-select {
+    background-color: #777777 !important;
+    opacity: 1;
+}
+
 .history {
     height: 65%;
     font-size: 20px;
@@ -1297,153 +1398,66 @@ hr {
 .folder-wrapper {
     font-size: 24px;
 }
+
+.folder-item-empty-area {
+    border: 1px dashed #ffffff;
+}
+
+.folder-item-empty-area::after {
+    content: '請加入經文';
+    padding: 5px;
+    width: 100%;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.list-handle {
+    -webkit-transition: 0.2s ease-in-out;
+    -moz-transition: 0.2s ease-in-out;
+    -o-transition: 0.2s ease-in-out;
+    transition: 0.2s ease-in-out;
+}
+
+.list-handle:hover {
+    margin-top: 7px;
+    transform: scale(1.2);
+}
+
+// layout
+.header {
+    background-color: $secondBackground;
+}
 </style>
 
 <style lang="scss">
 @import '@/assets/css/main.scss';
-.el-header {
-    background-color: $sceondBackground;
-}
 
-.el-aside,
-.el-main {
-    height: calc(100vh - 60px);
-}
-
-// select
-.el-input__inner {
-    background-color: $mainBackground !important;
-    border: 1px solid $borderColor !important;
-    color: $text !important;
-}
-
-.el-select-dropdown {
-    background-color: $sceondBackground !important;
-    border: 1px solid $borderColor !important;
-}
-
-.el-select-dropdown__item {
-    color: $text !important;
-}
-
-.el-select-dropdown__item.hover {
-    background-color: $thirdBackground !important;
-}
-
-.el-popper[x-placement^='bottom'] .popper__arrow,
-.el-popper[x-placement^='bottom'] .popper__arrow::after {
-    border-bottom-color: $borderColor !important;
-}
-
-/** button */
-.el-button--info {
-    background-color: $thirdBackground !important;
-    border-color: $borderColor !important;
-    -webkit-transition: opacity 0.2s ease-in-out;
-    -moz-transition: opacity 0.2s ease-in-out;
-    -o-transition: opacity 0.3s ease-in-out;
-    transition: opacity 0.3s ease-in-out;
-    -webkit-transition: background-color 0.3s ease-in-out;
-    -moz-transition: background-color 0.3s ease-in-out;
-    -o-transition: background-color 0.3s ease-in-out;
-    transition: background-color 0.3s ease-in-out;
-    opacity: 0.7;
-}
-
-.el-button--info:hover {
-    background-color: #777777 !important;
-    opacity: 1;
-}
-
-.el-button--info:disabled {
-    background-color: #777777 !important;
-    opacity: 1;
-}
-
-.button-select {
-    background-color: #777777 !important;
-    opacity: 1;
-}
-
-.modal-content {
+.bible-selector-modal-content {
     color: $text;
     background-color: $mainBackground !important;
 }
 
-.el-tabs {
-    height: 100%;
-}
-
-.el-tabs__item.is-active {
-    color: $text !important;
-}
-
-.el-tabs__item:hover {
-    color: $mainText !important;
-}
-
-.el-tabs__content {
-    background-color: $sceondBackground;
-    border-radius: 10px;
-    height: calc(100% - 5rem);
-    overflow-y: scroll !important;
-}
-
-.el-slider__bar {
-    background-color: #777777 !important;
-}
-
-.el-dropdown-menu {
-    background-color: $sceondBackground !important;
-    border-color: $thirdBackground !important;
-    width: 400px;
-}
-
-.el-dropdown-menu__item {
-    color: $mainText !important;
-}
-
-.el-dropdown-menu__item:hover {
-    background-color: $thirdBackground !important;
-}
-
-.el-tooltip__popper {
-    padding: 5px 15px 5px 0px !important;
-}
-
-.el-message-box {
+.bible-el-message-box {
     border: 1px solid $thirdBackground !important;
-    background-color: $sceondBackground !important;
+    background-color: $secondBackground !important;
+
+    .el-message-box__header > div {
+        color: $mainText !important;
+    }
+
+    .el-message-box__content {
+        color: $mainText !important;
+
+        .el-message-box__input > .el-input > input {
+            background-color: $mainBackground !important;
+            border: 1px solid $borderColor !important;
+            color: $text !important;
+        }
+    }
 }
 
-.el-message-box__title {
-    color: $mainText !important;
-}
-
-.el-message-box__content {
-    color: $mainText !important;
-}
-
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-    background: $sceondBackground;
-}
-
-::-webkit-scrollbar-track:focus {
-    background: $thirdBackground;
-}
-
-::-webkit-scrollbar-track:hover {
-    background: $thirdBackground;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-    background: #888888c9;
-    border-radius: 5px;
+.bible-flip-list-move {
+    transition: transform 0.5s;
 }
 </style>

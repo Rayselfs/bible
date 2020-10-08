@@ -1,5 +1,5 @@
 <template>
-    <el-container class="bible position-relative">
+    <el-container class="bible-slide position-relative">
         <el-header class="d-flex justify-content-center bible-wrapper">
             <p class="bible-info mb-0">
                 <span class="mr-3">{{ bookName }}</span>
@@ -23,7 +23,11 @@
                 </div>
             </el-main>
         </el-container>
-        <div v-show="!playStatus" class="layout"></div>
+        <div v-show="!playStatus" class="layout pt-5">
+            <div v-if="init">
+                <p class="text-center w-100 init-text">請將此視窗拉至延伸螢幕，並按下 F11 全螢幕</p>
+            </div>
+        </div>
     </el-container>
 </template>
 
@@ -55,13 +59,12 @@ export default {
             this.jumpToSection();
         }
 
-        this.$message({
-            showClose: true,
-            message: '請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕',
-            duration: 6000
-        });
+        setTimeout(() => {
+            this.init = false;
+        }, 4000);
     },
     data: () => ({
+        init: true,
         info: null,
         fontSize: '16px',
         list: [],
@@ -148,6 +151,16 @@ export default {
 
 <style lang="scss" scoped>
 @import '@/assets/css/main.scss';
+
+.init-text {
+    font-size: 4rem;
+}
+
+.bible-slide {
+    background-color: $mainBackground;
+    color: $mainText;
+    min-width: 1366px;
+}
 
 .title {
     line-height: 60px;

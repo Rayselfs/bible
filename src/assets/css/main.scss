@@ -1,5 +1,5 @@
 $mainBackground: #191919;
-$sceondBackground: #313131;
+$secondBackground: #313131;
 $thirdBackground: #494949;
 
 $borderColor: #313131;
@@ -7,9 +7,31 @@ $borderColor: #313131;
 $mainText: #ffffff;
 $text: #dddddd;
 
-.bible {
-    background-color: $mainBackground;
-    color: $mainText;
+hr {
+    border-top: 1px solid #ffffff;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: $secondBackground;
+}
+
+::-webkit-scrollbar-track:focus {
+    background: $thirdBackground;
+}
+
+::-webkit-scrollbar-track:hover {
+    background: $thirdBackground;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888888c9;
+    border-radius: 5px;
 }
 
 .cursor-pointer {
@@ -44,4 +66,130 @@ $text: #dddddd;
 
 .scroll-behavior-smooth {
     scroll-behavior: smooth;
+}
+
+// transform left
+.left-transform-leave-active,
+.left-transform-enter-active {
+    transition: all 0.2s;
+}
+.left-transform-enter {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+.left-transform-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+}
+
+// transform right
+.right-transform-leave-active,
+.right-transform-enter-active {
+    transition: all 0.2s;
+}
+.right-transform-enter {
+    opacity: 0;
+    transform: translateX(30px);
+}
+.right-transform-leave-to {
+    opacity: 0;
+    transform: translateX(-30px);
+}
+
+// element ui
+.el-aside,
+.el-main {
+    height: calc(100vh - 60px);
+}
+
+// el-select
+/deep/ .el-input__inner {
+    background-color: $mainBackground !important;
+    border: 1px solid $borderColor !important;
+    color: $text !important;
+}
+
+.el-select-dropdown {
+    background-color: $secondBackground !important;
+    border: 1px solid $borderColor !important;
+}
+
+/deep/ .el-select-dropdown__item {
+    color: $text !important;
+}
+
+/deep/ .el-select-dropdown__item.hover {
+    background-color: $thirdBackground !important;
+}
+
+.el-popper[x-placement^='bottom'] .popper__arrow,
+.el-popper[x-placement^='bottom'] .popper__arrow::after {
+    border-bottom-color: $borderColor !important;
+}
+
+/** button */
+.el-button--info {
+    background-color: $thirdBackground !important;
+    border-color: $borderColor !important;
+    -webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    -o-transition: opacity 0.3s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
+    -webkit-transition: background-color 0.3s ease-in-out;
+    -moz-transition: background-color 0.3s ease-in-out;
+    -o-transition: background-color 0.3s ease-in-out;
+    transition: background-color 0.3s ease-in-out;
+    opacity: 0.7;
+}
+
+.el-button--info:hover {
+    background-color: #777777 !important;
+    opacity: 1;
+}
+
+.el-button--info:disabled {
+    background-color: #777777 !important;
+    opacity: 1;
+}
+
+.el-tabs {
+    height: 100%;
+}
+
+/deep/ .el-tabs__item.is-active {
+    color: $text !important;
+}
+
+/deep/ .el-tabs__item:hover {
+    color: $mainText !important;
+}
+
+/deep/ .el-tabs__content {
+    background-color: $secondBackground;
+    border-radius: 10px;
+    height: calc(100% - 5rem);
+    overflow-y: scroll !important;
+}
+
+/deep/ .el-slider__bar {
+    background-color: #777777 !important;
+}
+
+// dropdown
+.el-dropdown-menu {
+    background-color: $secondBackground !important;
+    border-color: $thirdBackground !important;
+    width: 400px;
+}
+
+.el-dropdown-menu__item {
+    color: $mainText !important;
+}
+
+.el-dropdown-menu__item:hover {
+    background-color: $thirdBackground !important;
+}
+
+.el-tooltip__popper {
+    padding: 5px 15px 5px 0px !important;
 }

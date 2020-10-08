@@ -32,13 +32,17 @@ import axios from 'axios';
 import VueAxios from 'vue-axios';
 Vue.use(VueAxios, axios);
 
+/**
+ * font awesome
+ */
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faFolder, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faEdit, faTrash, faBars } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
-library.add(faFolder, faEdit, faTrash);
-
+library.add(faFolder, faEdit, faTrash, faBars);
 Vue.component('fa', FontAwesomeIcon);
+
+import draggable from 'vuedraggable';
+Vue.component('draggable', draggable);
 
 Vue.config.productionTip = false;
 
