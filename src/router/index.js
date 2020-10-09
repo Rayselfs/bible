@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Bible from '../views/Bible.vue';
+import Bible from '@/views/Bible.vue';
 import Slide from '@/views/Slide';
 
 Vue.use(VueRouter);

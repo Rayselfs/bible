@@ -36,11 +36,6 @@ export default {
     },
     computed: {
         ...mapGetters(['menu'])
-    },
-    watch: {
-        menu(value) {
-            console.log(value);
-        }
     }
 };
 </script>
