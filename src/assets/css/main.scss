@@ -34,6 +34,18 @@ hr {
     border-radius: 5px;
 }
 
+.overflow-x-hidden {
+    overflow-x: hidden;
+}
+
+.overflow-y-hidden {
+    overflow-y: hidden;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
 .cursor-pointer {
     cursor: pointer;
 }
@@ -114,11 +126,11 @@ hr {
     border: 1px solid $borderColor !important;
 }
 
-/deep/ .el-select-dropdown__item {
+.el-select-dropdown__item {
     color: $text !important;
 }
 
-/deep/ .el-select-dropdown__item.hover {
+.el-select-dropdown__item.hover {
     background-color: $thirdBackground !important;
 }
 
@@ -156,22 +168,22 @@ hr {
     height: 100%;
 }
 
-/deep/ .el-tabs__item.is-active {
+.el-tabs__item.is-active {
     color: $text !important;
 }
 
-/deep/ .el-tabs__item:hover {
+.el-tabs__item:hover {
     color: $mainText !important;
 }
 
-/deep/ .el-tabs__content {
+.el-tabs__content {
     background-color: $secondBackground;
     border-radius: 10px;
     height: calc(100% - 5rem);
     overflow-y: scroll !important;
 }
 
-/deep/ .el-slider__bar {
+.el-slider__bar {
     background-color: #777777 !important;
 }
 

@@ -1,22 +1,20 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import Home from '../views/Home.vue';
+import Bible from '../views/Bible.vue';
+import Slide from '@/views/Slide';
 
 Vue.use(VueRouter);
 
 const routes = [
     {
         path: '/',
-        name: 'Home',
-        component: Home
+        name: 'Bible',
+        component: Bible
     },
     {
-        path: '/list',
-        name: 'List',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../views/List.vue')
+        path: '/slide',
+        name: 'Slide',
+        component: Slide
     }
 ];
 

@@ -36,16 +36,31 @@ Vue.use(VueAxios, axios);
  * font awesome
  */
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faFolder, faEdit, faTrash, faBars } from '@fortawesome/free-solid-svg-icons';
+import {
+    faFolder,
+    faEdit,
+    faTrash,
+    faBars,
+    faBible,
+    faPhotoVideo,
+    faFilePowerpoint
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-library.add(faFolder, faEdit, faTrash, faBars);
+library.add(faFolder, faEdit, faTrash, faBars, faBible, faPhotoVideo, faFilePowerpoint);
 Vue.component('fa', FontAwesomeIcon);
 
+/**
+ * vuedraggable
+ */
 import draggable from 'vuedraggable';
 Vue.component('draggable', draggable);
 
 Vue.config.productionTip = false;
 
+/**
+ * error handle
+ * @param {object} err
+ */
 Vue.config.errorHandler = function(err) {
     if (process.env.NODE_ENV === 'development') {
         console.error(err.message);
@@ -68,7 +83,10 @@ Vue.config.errorHandler = function(err) {
     }
 };
 
+import { store } from '@/store/store';
+
 new Vue({
     router,
+    store,
     render: (h) => h(App)
 }).$mount('#app');

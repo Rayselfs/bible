@@ -2,9 +2,8 @@
     <el-container class="bible-control">
         <el-header class="header">
             <b-row class="navbar" align-h="between">
-                <b-col cols="4" class="d-flex">
-                    <img src="@/assets/media/hhc-icon.png" alt="" srcset="" width="40px" height="40px" class="mr-2" />
-                    <h3 class="mt-1">家教會聖經系統</h3>
+                <b-col cols="4">
+                    <header-title></header-title>
                 </b-col>
                 <b-col cols="4" class="d-flex justify-content-center">
                     <el-select v-model="bookFilterSelectorModel" placeholder="請選擇" class="mr-3" @change="filterBook">
@@ -432,6 +431,7 @@ import { book, chapter, section } from '@/assets/js/function';
 import { bible } from '@/assets/js/bible';
 import collect from 'collect.js';
 import Fuse from 'fuse.js';
+import HeaderTitle from '@/components/HeaderTitle';
 
 let slide;
 
@@ -493,6 +493,9 @@ export default {
             ghostClass: 'ghost'
         }
     }),
+    components: {
+        'header-title': HeaderTitle
+    },
     created() {
         window.addEventListener('storage', this.localStorageChange);
 
@@ -1159,7 +1162,11 @@ export default {
         folderTransition() {
             return this.customLayer ? 'left-transform' : 'right-transform';
         },
+        /**
+         * 加入項目到資料夾裡
+         */
         addBibleInfoToFolder(item) {
+            this.tabName = 'folder';
             if (this.customLayer) {
                 if (this.customizeList.length == 0) {
                     this.addFolder();
@@ -1178,6 +1185,13 @@ export default {
                 this.itemCache = item;
                 return;
             }
+
+            this.$notify.success({
+                title: '成功',
+                message: `${this.getBookName(item.book)}, ${item.chapter}章, ${item.section}節 加入 ${
+                    this.customizeList[this.customizeSelected].label
+                } 資料夾`
+            });
 
             this.customizeList[this.customizeSelected].list.push({
                 content: item.content,

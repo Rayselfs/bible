@@ -8,7 +8,7 @@
             </p>
         </el-header>
         <el-container>
-            <el-main class="list scroll-behavior-smooth">
+            <el-main class="overflow-hidden scroll-behavior-smooth">
                 <div class="content">
                     <div
                         v-for="(item, index) in list"
@@ -164,10 +164,6 @@ export default {
 
 .title {
     line-height: 60px;
-}
-
-.list {
-    overflow: hidden;
 }
 
 .layout {
