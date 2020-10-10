@@ -521,7 +521,7 @@ export default {
         this.recallFolder();
         this.recallHistory();
 
-        // this.openWindow();
+        this.openWindow();
     },
     mounted() {
         this.infoMessage('請將投影視窗拉至第二投影螢幕，並按下 F11 全螢幕');
@@ -538,7 +538,7 @@ export default {
             localStorage.setItem('biblePlayStatus', 0);
             localStorage.setItem('bibleWindowNotification', 1);
 
-            slide = window.open('/list', 'slider', 'height=1080, width=1920');
+            slide = window.open('/slide', 'slider', 'height=1080, width=1920');
             this.slideWindowOpen = true;
         },
         /**
